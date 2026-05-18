@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KCPH Notice Board</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Khmer:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0ede8;--sur:#fff;--s2:#f7f5f2;--s3:#eeebe6;
+  --bdr:#ddd9d0;--bdr2:#b8b2a8;
+  --tx:#18160f;--t2:#5a5650;--t3:#9c9790;
+  --ac:#1b5c8c;--ac2:#2878b8;--acl:#e5f0f8;
+  --gn:#1b6b48;--gn2:#22854f;--gnl:#e4f3ec;
+  --rd:#b83030;--rdl:#faeaea;
+  --yw:#8a6000;--ywl:#fdf3dc;
+  --or:#7a3e0a;--orl:#fdeee0;
+  --teal:#0d7377;--teal-l:#e0f4f4;
+  --sh:0 2px 8px rgba(0,0,0,.08),0 6px 20px rgba(0,0,0,.04);
+  --shL:0 6px 24px rgba(0,0,0,.1),0 16px 40px rgba(0,0,0,.06);
+  --r:8px;--rL:14px;
+  --F:'IBM Plex Sans','Noto Sans Khmer',sans-serif;
+  --M:'IBM Plex Mono',monospace;
+}
+body{font-family:var(--F);background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.55}
+
+/* ── LOGIN ── */
+#login-scr{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#0a2e4a 0%,#1b5c8c 55%,#2878b8 100%);padding:24px}
+.lcard{background:var(--sur);border-radius:var(--rL);padding:40px 36px;width:100%;max-width:400px;box-shadow:var(--shL);animation:fUp .4s ease}
+@keyframes fUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.llogo{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+.lmark{width:48px;height:48px;background:var(--ac);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--M);font-size:11px;font-weight:500;color:#fff;letter-spacing:.04em;flex-shrink:0}
+
+/* ── FORMS ── */
+.fg{margin-bottom:16px}
+.fl{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px}
+.fi,.fs,.fta{width:100%;padding:9px 12px;border:1px solid var(--bdr);border-radius:var(--r);font-family:var(--F);font-size:13px;background:var(--sur);color:var(--tx);outline:none;transition:border .15s,box-shadow .15s}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(27,92,140,.1)}
+.fta{resize:vertical;min-height:88px}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fhint{font-size:11px;color:var(--t3);margin-top:4px}
+
+/* ── APP ── */
+#app-scr{display:none;min-height:100vh;flex-direction:column}
+#app-scr.on{display:flex}
+
+/* ── HEADER ── */
+.hdr{background:var(--ac);color:#fff;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(0,0,0,.2);flex-shrink:0}
+.hl{display:flex;align-items:center;gap:12px}
+.hmrk{width:30px;height:30px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--M);font-size:9px;font-weight:500;letter-spacing:.05em}
+.htit{font-size:14px;font-weight:600}.hsub{font-size:10px;opacity:.6;font-weight:300}
+.hrr{display:flex;align-items:center;gap:8px}
+.nbell{position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;cursor:pointer;font-size:16px}
+.nbell:hover{background:rgba(255,255,255,.22)}
+.nbdg{position:absolute;top:4px;right:4px;width:8px;height:8px;background:#e05050;border-radius:50%;border:2px solid var(--ac);display:none}
+.nbdg.on{display:block;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35);opacity:.7}}
+.nd-wrap{position:absolute;top:54px;right:16px;width:310px;background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rL);box-shadow:var(--shL);z-index:200;overflow:hidden;display:none;animation:fUp .2s ease}
+.nd-wrap.open{display:block}
+.nd-h{padding:11px 15px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.nd-ht{font-size:13px;font-weight:600}
+.nd-cl{font-size:11px;color:var(--ac);cursor:pointer}
+.nd-list{max-height:300px;overflow-y:auto}
+.nd-itm{padding:10px 15px;border-bottom:1px solid var(--bdr);cursor:pointer;transition:background .12s}
+.nd-itm:hover{background:var(--s2)}.nd-itm.unr{background:var(--acl)}
+.nd-it{font-size:12.5px;font-weight:600;margin-bottom:3px;line-height:1.35}
+.nd-is{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:5px}
+.nd-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.nd-emp{padding:22px;text-align:center;font-size:12px;color:var(--t3)}
+.ptog{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer;color:rgba(255,255,255,.8);white-space:nowrap}
+.ptog.on{background:rgba(100,220,150,.2);border-color:rgba(100,220,150,.4);color:#90ffb4}
+.husr{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:3px 12px 3px 3px;font-size:12px;font-weight:500;cursor:pointer}
+.hav{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+.hlout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 10px;font-size:11px;font-family:var(--F);color:#fff;cursor:pointer}
+.hlout:hover{background:rgba(255,255,255,.22)}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:210px 1fr 300px;flex:1;min-height:0}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--sur);border-right:1px solid var(--bdr);padding:16px 0;overflow-y:auto;position:sticky;top:54px;height:calc(100vh - 54px)}
+.sbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);padding:0 14px;margin:14px 0 5px}
+.nav{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;border-left:3px solid transparent;color:var(--t2);font-size:12.5px;transition:background .1s}
+.nav:hover{background:var(--s2)}
+.nav.active{background:var(--acl);color:var(--ac);border-left-color:var(--ac);font-weight:500}
+.nv-ic{font-size:14px;width:16px;text-align:center}
+.nbg{margin-left:auto;font-family:var(--M);font-size:10px;font-weight:500;background:var(--ac);color:#fff;border-radius:10px;padding:1px 6px}
+.nbg.red{background:var(--rd)}.nbg.teal{background:var(--teal)}
+
+/* ── MAIN ── */
+.main{padding:20px;overflow-y:auto}
+.mhd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px}
+.mhtit{font-size:17px;font-weight:600}
+.mhsub{font-size:11px;color:var(--t3);margin-top:2px}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.sc{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 14px}
+.sn{font-size:22px;font-weight:600;font-family:var(--M);color:var(--ac)}
+.sl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:4px 11px;border-radius:20px;border:1px solid var(--bdr);background:var(--sur);font-size:11.5px;cursor:pointer;color:var(--t2);transition:all .12s}
+.chip:hover{border-color:var(--ac);color:var(--ac)}
+.chip.active{background:var(--ac);color:#fff;border-color:var(--ac)}
+
+/* ── NOTICE CARDS ── */
+.nlist{display:flex;flex-direction:column;gap:10px}
+.ncard{background:var(--sur);border:1px solid var(--bdr);border-radius:var(--rL);padding:16px 18px;cursor:pointer;position:relative;overflow:hidden;transition:box-shadow .15s,transform .15s;border-left:4px solid transparent}
+.ncard:hover{box-shadow:var(--sh);transform:translateY(-1px)}
+.ncard.unread{border-left-color:var(--ac)}
+.ncard.urgent{border-left-color:var(--rd)}
+.ncard.meeting{border-left-color:var(--gn)}
+.ncard.policy{border-left-color:var(--ac2)}
+.ncard.training{border-left-color:var(--or)}
+.ncard.sel{box-shadow:var(--sh);border-color:var(--ac)}
+.nctop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
+.nctit{font-size:13.5px;font-weight:600;flex:1;line-height:1.4}
+.nctags{display:flex;gap:5px;flex-shrink:0}
+.tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.05em}
+.tag-urgent{background:var(--rdl);color:var(--rd)}
+.tag-meeting{background:var(--gnl);color:var(--gn)}
+.tag-policy{background:var(--acl);color:var(--ac)}
+.tag-info{background:var(--ywl);color:var(--yw)}
+.tag-training{background:var(--orl);color:var(--or)}
+.ncbody{font-size:12px;color:var(--t2);line-height:1.45;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ncmeta{display:flex;flex-wrap:wrap;gap:10px;font-size:10.5px;color:var(--t3)}
+.ncmeta span{display:flex;align-items:center;gap:3px}
+.ncfoot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--bdr);flex-wrap:wrap;gap:6px}
+.apill{font-size:11px;font-weight:500;padding:3px 9px;border-radius:10px;display:flex;align-items:center;gap:5px}
+.apill.ok{background:var(--gnl);color:var(--gn)}
+.apill.pend{background:var(--ywl);color:var(--yw)}
+.apill.na{background:var(--s2);color:var(--t3)}
+.apill.att-ok{background:var(--teal-l);color:var(--teal)}
+.apill.att-pend{background:#f0e8ff;color:#6b21a8}
+.pw{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--t2)}
+.pb{width:70px;height:4px;background:var(--bdr);border-radius:2px;overflow:hidden}
+.pf{height:100%;background:var(--gn);border-radius:2px;transition:width .5s}
+
+/* ── DETAIL PANEL ── */
+.detail{background:var(--sur);border-left:1px solid var(--bdr);position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto}
+.demp{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--t3);gap:10px;padding:32px;text-align:center}
+.dp{padding:22px 20px}
+.dptags{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.dptit{font-size:16px;font-weight:600;line-height:1.35;margin-bottom:8px}
+.dpmeta{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--t3);padding-bottom:14px;border-bottom:1px solid var(--bdr);margin-bottom:16px}
+.dpmeta span{display:flex;align-items:center;gap:4px}
+.dpbody{font-size:12.5px;color:var(--t2);line-height:1.7;white-space:pre-line;margin-bottom:18px}
+.dpatt{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);font-size:12px;margin-bottom:18px;cursor:pointer}
+.dpatt:hover{background:var(--acl)}
+
+/* ── ACK BOX ── */
+.ackbox{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--rL);padding:14px 16px;margin-bottom:14px}
+.ackbox-t{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:12px}
+.ackdone{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--gn)}
+.ackbtn{width:100%;padding:11px;background:var(--gn);color:#fff;border:none;border-radius:var(--r);font-family:var(--F);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.ackbtn:hover{background:var(--gn2)}
+.ackbtn:disabled{background:var(--bdr);color:var(--t3);cursor:not-allowed}
+.acknote{font-size:10.5px;color:var(--t3);text-align:center;margin-top:8px;line-height:1.4}
+
+/* ── ATTENDANCE BOX ── */
+.attbox{background:linear-gradient(135deg,#f0faf6 0%,#e8f4ff 100%);border:1px solid #a8d8c8;border-radius:var(--rL);padding:16px;margin-bottom:14px;position:relative;overflow:hidden}
+.attbox::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(13,115,119,.06);border-radius:50%}
+.attbox-t{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.att-rsvp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.rsvp-btn{padding:9px 8px;border:2px solid var(--bdr);border-radius:var(--r);background:var(--sur);font-family:var(--F);font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.rsvp-btn:hover{transform:translateY(-1px)}
+.rsvp-btn.attend{border-color:var(--gn);color:var(--gn)}
+.rsvp-btn.attend:hover,.rsvp-btn.attend.active{background:var(--gn);color:#fff;border-color:var(--gn)}
+.rsvp-btn.absent{border-color:var(--rd);color:var(--rd)}
+.rsvp-btn.absent:hover,.rsvp-btn.absent.active{background:var(--rd);color:#fff;border-color:var(--rd)}
+.rsvp-done{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:10px;background:var(--gnl);border-radius:var(--r);color:var(--gn)}
+.rsvp-done.absent-c{background:var(--rdl);color:var(--rd)}
+.att-absent-reason{margin-top:8px}
+.checkin-section{margin-top:12px;padding-top:12px;border-top:1px dashed #a8d8c8}
+.checkin-t{font-size:11px;font-weight:600;color:var(--teal);margin-bottom:8px}
+.checkin-btn{width:100%;padding:11px;background:var(--teal);color:#fff;border:none;border-radius:var(--r);font-family:var(--F);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.checkin-btn:hover{background:#0a5e62}
+.checkin-btn:disabled{background:var(--bdr);color:var(--t3);cursor:not-allowed}
+.checkin-done{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--teal);padding:10px;background:var(--teal-l);border-radius:var(--r)}
+.att-time{font-size:10.5px;color:var(--t3);font-family:var(--M);margin-top:4px}
+
+/* ── ATTENDANCE TRACKER (Admin) ── */
+.at{border-top:1px solid var(--bdr);padding-top:16px;margin-top:4px}
+.at-t{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:10px}
+.at-tabs{display:flex;gap:2px;margin-bottom:12px;background:var(--s2);border-radius:var(--r);padding:3px}
+.at-tab{flex:1;padding:5px 8px;border-radius:6px;text-align:center;font-size:11px;font-weight:500;cursor:pointer;color:var(--t2);transition:all .12s}
+.at-tab.active{background:var(--sur);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.at-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.ass{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 8px;text-align:center}
+.asn{font-size:18px;font-weight:600;font-family:var(--M)}
+.asn.g{color:var(--gn)}.asn.r{color:var(--rd)}.asn.t{color:var(--teal)}
+.asl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+.fpb{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:11px;color:var(--t2)}
+.fpb .pb{flex:1;height:6px}
+.pl{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto}
+.pi{display:flex;align-items:center;gap:7px;padding:6px 9px;background:var(--s2);border-radius:var(--r);font-size:11.5px}
+.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pdot.g{background:var(--gn)}.pdot.r{background:var(--rd)}.pdot.y{background:#d4a017}.pdot.t{background:var(--teal)}
+.pn{flex:1;font-weight:500}.pd{color:var(--t3);font-size:10.5px}.pt{color:var(--t3);font-size:9.5px;font-family:var(--M)}
+.pi-reason{font-size:10px;color:var(--rd);margin-left:14px;margin-top:2px;font-style:italic}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center;padding:24px}
+.overlay.open{display:flex}
+.modal{background:var(--sur);border-radius:var(--rL);width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:var(--shL);animation:fUp .2s ease}
+.mhd{padding:18px 22px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
+.mhdt{font-size:14px;font-weight:600}
+.mc{width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:6px;color:var(--t3);font-size:18px;border:none;background:none}
+.mc:hover{background:var(--s2)}
+.mbody{padding:18px 22px}
+.mfoot{padding:14px 22px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r);border:none;cursor:pointer;font-family:var(--F);font-size:12.5px;font-weight:500;transition:all .12s}
+.btn-p{background:var(--ac);color:#fff}.btn-p:hover{background:var(--ac2)}
+.btn-g{background:transparent;color:var(--t2);border:1px solid var(--bdr)}.btn-g:hover{background:var(--s2)}
+.btn-gn{background:var(--gn);color:#fff}.btn-gn:hover{background:var(--gn2)}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:#0a5e62}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-fw{width:100%;justify-content:center}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── ATTENDANCE ADMIN VIEW ── */
+.att-admin-summary{background:linear-gradient(135deg,var(--teal-l),var(--acl));border:1px solid #a8d8c8;border-radius:var(--rL);padding:14px 16px;margin-bottom:14px}
+.att-admin-t{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:12px}
+
+/* ── SPINNER ── */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.spin-dk{border-color:rgba(0,0,0,.12);border-top-color:var(--ac)}
+
+/* ── LBAR ── */
+.lbar{position:fixed;top:54px;left:0;right:0;height:2px;background:rgba(27,92,140,.15);z-index:99;pointer-events:none}
+.lfill{height:100%;background:var(--ac2);transition:width .3s;width:0}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--tx);color:#fff;padding:11px 16px;border-radius:var(--r);font-size:12.5px;font-weight:500;box-shadow:var(--shL);z-index:999;transform:translateY(60px);opacity:0;transition:all .28s;display:flex;align-items:center;gap:8px;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:var(--gn)}.toast.info{background:var(--ac)}.toast.err{background:var(--rd)}.toast.teal{background:var(--teal)}
+
+/* ── SETUP ── */
+.setup-b{background:var(--ywl);border:1px solid #e6c060;border-radius:var(--r);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--yw);line-height:1.5}
+.url-row{display:flex;gap:8px;margin-top:8px}
+.url-row input{flex:1}
+
+/* ── PRINT ── */
+@media print{
+  .sidebar,.detail,.hdr,.lbar,.toast,.chips,.stats,.setup-b{display:none!important}
+  .layout{display:block}
+  .main{padding:0}
+  .ncard{break-inside:avoid;page-break-inside:avoid}
+}
+
+.empty{text-align:center;padding:48px 24px;color:var(--t3)}
+.empty-ic{font-size:36px;opacity:.35;margin-bottom:12px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar,.detail{display:none}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-scr">
+  <div class="lcard">
+    <div class="llogo">
+      <div class="lmark">KCPH</div>
+      <div>
+        <div style="font-size:16px;font-weight:600">Notice Board</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Kampong Chhnang Provincial Hospital</div>
+      </div>
+    </div>
+    <div style="font-size:22px;font-weight:600;margin-bottom:6px">Sign In</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:28px;line-height:1.5">Enter your Staff ID and password to access official hospital notices and meetings.</div>
+    <div class="fg"><label class="fl">Staff ID</label><input class="fi" id="li-id" placeholder="e.g. S006" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fg"><label class="fl">Password</label><input class="fi" type="password" id="li-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-p btn-fw" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div style="font-size:11px;color:var(--t3);margin-top:12px;text-align:center">Demo — Admin: <code style="background:var(--s2);padding:1px 5px;border-radius:3px;font-family:var(--M)">S006</code>/<code style="background:var(--s2);padding:1px 5px;border-radius:3px;font-family:var(--M)">pass006</code> &nbsp;|&nbsp; Staff: <code style="background:var(--s2);padding:1px 5px;border-radius:3px;font-family:var(--M)">S008</code>/<code style="background:var(--s2);padding:1px 5px;border-radius:3px;font-family:var(--M)">pass008</code></div>
+    <div style="color:var(--rd);font-size:12px;margin-top:10px;text-align:center;display:none" id="lerr"></div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app-scr">
+  <div class="lbar"><div class="lfill" id="lfill"></div></div>
+
+  <!-- Notification dropdown -->
+  <div class="nd-wrap" id="nd-wrap">
+    <div class="nd-h"><div class="nd-ht">🔔 Notifications</div><div class="nd-cl" onclick="clearNotifs()">Clear all</div></div>
+    <div class="nd-list" id="nd-list"><div class="nd-emp">No new notifications</div></div>
+  </div>
+
+  <!-- Header -->
+  <header class="hdr">
+    <div class="hl">
+      <div class="hmrk">KCPH</div>
+      <div><div class="htit">Notice Board</div><div class="hsub">Kampong Chhnang Provincial Hospital</div></div>
+    </div>
+    <div class="hrr">
+      <span id="live-dot" style="font-size:10px;color:rgba(255,255,255,.45);display:none">● Live</span>
+      <div class="ptog" id="ptog" onclick="togglePush()">🔔 <span id="plbl">Enable Push</span></div>
+      <div class="nbell" onclick="toggleNd()">🔔<div class="nbdg" id="nbdg"></div></div>
+      <div class="husr" onclick="openProfile()">
+        <div class="hav" id="h-av">--</div><span id="h-name">--</span>
+      </div>
+      <button class="hlout" onclick="doLogout()">Sign out</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sbl">Notices</div>
+      <div class="nav active" id="nav-all" onclick="setF('all',this)"><span class="nv-ic">📋</span>All Notices<span class="nbg" id="c-all">0</span></div>
+      <div class="nav" id="nav-unread" onclick="setF('unread',this)"><span class="nv-ic">🔵</span>Unread<span class="nbg red" id="c-unread">0</span></div>
+      <div class="nav" id="nav-pend" onclick="setF('pending',this)"><span class="nv-ic">⏳</span>Pending ACK<span class="nbg red" id="c-pend">0</span></div>
+      <div class="nav" id="nav-conf" onclick="setF('confirmed',this)"><span class="nv-ic">✅</span>Confirmed<span class="nbg" id="c-conf">0</span></div>
+      <div class="sbl" style="margin-top:18px">Category</div>
+      <div class="nav" onclick="setF('urgent',this)"><span class="nv-ic">🚨</span>Urgent</div>
+      <div class="nav" id="nav-meet" onclick="setF('meeting',this)"><span class="nv-ic">📅</span>Meetings<span class="nbg teal" id="c-meet">0</span></div>
+      <div class="nav" onclick="setF('policy',this)"><span class="nv-ic">📄</span>Policy</div>
+      <div class="nav" onclick="setF('training',this)"><span class="nv-ic">🎓</span>Training</div>
+      <div class="sbl" id="admin-sbl" style="display:none;margin-top:18px">Admin</div>
+      <div class="nav" id="admin-post-n" style="display:none" onclick="openPost()"><span class="nv-ic">✏️</span>Post Notice</div>
+      <div class="nav" id="admin-att-n" style="display:none" onclick="setF('meeting',document.getElementById('nav-meet'))"><span class="nv-ic">📊</span>Attendance Reports</div>
+      <div class="nav" id="admin-staff-n" style="display:none" onclick="openStaff()"><span class="nv-ic">👥</span>Add Staff</div>
+      <div class="nav" id="admin-email-n" style="display:none" onclick="openEmailTest()"><span class="nv-ic">📧</span>Test Email</div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="mhd">
+        <div><div class="mhtit" id="page-title">All Notices</div><div class="mhsub" id="page-sub">Official hospital communications</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-g btn-sm" onclick="loadNotices()">🔄 Refresh</button>
+          <button class="btn btn-p btn-sm" id="post-btn" style="display:none" onclick="openPost()">✏️ Post Notice</button>
+        </div>
+      </div>
+
+      <div class="setup-b" id="setup-b" style="display:none">
+        <strong>⚙️ Demo Mode — Backend Not Connected</strong><br>
+        Paste your Google Apps Script Web App URL to enable live data, email notifications, and attendance tracking.
+        <div class="url-row">
+          <input class="fi" id="gas-url-inp" placeholder="https://script.google.com/macros/s/.../exec">
+          <button class="btn btn-p btn-sm" onclick="saveGasUrl()">Connect</button>
+        </div>
+      </div>
+
+      <div class="stats" id="admin-stats" style="display:none">
+        <div class="sc"><div class="sn" id="s-total">—</div><div class="sl">Total Notices</div></div>
+        <div class="sc"><div class="sn" id="s-rate" style="color:var(--gn)">—</div><div class="sl">ACK Rate</div></div>
+        <div class="sc"><div class="sn" id="s-att" style="color:var(--teal)">—</div><div class="sl">Meetings Tracked</div></div>
+        <div class="sc"><div class="sn" id="s-urg" style="color:var(--rd)">—</div><div class="sl">Urgent</div></div>
+      </div>
+
+      <div class="chips">
+        <div class="chip active" onclick="setChip(this,'all')">All</div>
+        <div class="chip" onclick="setChip(this,'urgent')">🚨 Urgent</div>
+        <div class="chip" onclick="setChip(this,'meeting')">📅 Meeting</div>
+        <div class="chip" onclick="setChip(this,'policy')">📄 Policy</div>
+        <div class="chip" onclick="setChip(this,'training')">🎓 Training</div>
+        <div class="chip" onclick="setChip(this,'info')">ℹ️ Info</div>
+      </div>
+
+      <div class="nlist" id="nlist"></div>
+    </main>
+
+    <!-- Detail Panel -->
+    <aside class="detail">
+      <div class="demp" id="demp"><div style="font-size:36px;opacity:.3">📋</div><div style="font-size:12px">Select a notice to view details and take action</div></div>
+      <div id="dcontent" style="display:none"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- Post Notice Modal -->
+<div class="overlay" id="post-modal">
+  <div class="modal">
+    <div class="mhd"><div class="mhdt">Post New Notice</div><button class="mc" onclick="closePost()">×</button></div>
+    <div class="mbody">
+      <div class="fg"><label class="fl">Title *</label><input class="fi" id="f-title" placeholder="e.g. Monthly QI Meeting — June 2026"></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Category *</label>
+          <select class="fs" id="f-type">
+            <option value="meeting">📅 Meeting Invitation</option>
+            <option value="policy">📄 Policy / SOP</option>
+            <option value="urgent">🚨 Urgent Notice</option>
+            <option value="training">🎓 Training</option>
+            <option value="info">ℹ️ Information</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Department</label>
+          <select class="fs" id="f-dept">
+            <option value="all">All Departments</option>
+            <option value="OPD">OPD</option><option value="IPD">IPD / Ward</option>
+            <option value="Emergency">Emergency</option><option value="Maternity">Maternity (MCH)</option>
+            <option value="Surgery">Surgery / OT</option><option value="Lab">Laboratory</option>
+            <option value="Pharmacy">Pharmacy</option><option value="Radiology">Radiology</option>
+            <option value="ICU">ICU</option><option value="Admin">Administration</option>
+            <option value="Technical">Technical Office</option><option value="IPC">IPC Unit</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Content *</label><textarea class="fta" id="f-body" placeholder="Full notice — agenda, requirements, schedule..."></textarea></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Event Date & Time</label><input class="fi" type="datetime-local" id="f-date"></div>
+        <div class="fg"><label class="fl">Location / Room</label><input class="fi" id="f-loc" placeholder="e.g. Conference Room, 2F"></div>
+      </div>
+      <div class="fg"><label class="fl">Attachment Reference</label><input class="fi" id="f-attach" placeholder="e.g. Agenda-June2026.pdf"></div>
+      <!-- Attendance option (only for meeting) -->
+      <div id="att-option" style="display:none;background:var(--teal-l);border:1px solid #a8d8c8;border-radius:var(--r);padding:12px 14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:600;color:var(--teal);margin-bottom:8px">📊 Meeting Attendance Tracking</div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px">
+          <input type="checkbox" id="f-track-att" checked> Enable attendance tracking for this meeting
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="f-rsvp" checked> Allow RSVP (staff confirm attendance / send apology in advance)
+        </label>
+      </div>
+      <div class="fg">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="f-ack" checked> Require acknowledgment
+        </label>
+      </div>
+      <div class="fg"><label class="fl">ACK Deadline</label><input class="fi" type="date" id="f-deadline"></div>
+      <div style="background:var(--acl);border:1px solid #b0cce8;border-radius:var(--r);padding:10px 12px;font-size:11.5px;color:var(--ac);display:flex;align-items:center;gap:8px">
+        📧 <span>Email notifications will be sent to all target staff automatically when posted.</span>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-g" onclick="closePost()">Cancel</button>
+      <button class="btn btn-p" id="post-sub" onclick="submitPost()">📢 Post & Notify Staff</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Staff Modal -->
+<div class="overlay" id="staff-modal">
+  <div class="modal" style="max-width:460px">
+    <div class="mhd"><div class="mhdt">Add Staff Account</div><button class="mc" onclick="closeStaff()">×</button></div>
+    <div class="mbody">
+      <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="sf-name" placeholder="e.g. Dr. Chan Sophea"></div>
+      <div class="fr2">
+        <div class="fg"><label class="fl">Department *</label>
+          <select class="fs" id="sf-dept">
+            <option value="OPD">OPD</option><option value="IPD">IPD / Ward</option><option value="Emergency">Emergency</option>
+            <option value="Maternity">Maternity (MCH)</option><option value="Surgery">Surgery / OT</option>
+            <option value="Lab">Laboratory</option><option value="Pharmacy">Pharmacy</option>
+            <option value="Radiology">Radiology</option><option value="ICU">ICU</option>
+            <option value="Admin">Administration</option><option value="Technical">Technical Office</option><option value="IPC">IPC Unit</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Role</label>
+          <select class="fs" id="sf-role"><option value="staff">Staff</option><option value="admin">Admin</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Email *</label><input class="fi" type="email" id="sf-email" placeholder="name@kcph.gov.kh"></div>
+      <div class="fg"><label class="fl">Initial Password</label><input class="fi" id="sf-pass" value="kcph1234"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-g" onclick="closeStaff()">Cancel</button>
+      <button class="btn btn-p" onclick="submitStaff()">Add Staff</button>
+    </div>
+  </div>
+</div>
+
+<!-- Email Test Modal -->
+<div class="overlay" id="email-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="mhd"><div class="mhdt">📧 Test Email Notification</div><button class="mc" onclick="closeEmailTest()">×</button></div>
+    <div class="mbody">
+      <p style="font-size:13px;color:var(--t2);margin-bottom:14px">Send a test email to verify notifications are working.</p>
+      <div class="fg"><label class="fl">Send test to</label><input class="fi" type="email" id="test-email" placeholder="your@email.com"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-g" onclick="closeEmailTest()">Cancel</button>
+      <button class="btn btn-p" id="test-btn" onclick="sendTestEmail()">📧 Send Test</button>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="overlay" id="profile-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="mhd"><div class="mhdt">My Profile & Notifications</div><button class="mc" onclick="closeProfile()">×</button></div>
+    <div class="mbody">
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:14px">
+        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:10px">Account</div>
+        <div style="font-size:13px;font-weight:600" id="pm-name">—</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:3px" id="pm-dept">—</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px" id="pm-id">—</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:14px">
+        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:10px">📧 Email Notifications</div>
+        <div class="fg"><label class="fl">Your Email</label><input class="fi" type="email" id="pm-email" placeholder="name@kcph.gov.kh"></div>
+        <button class="btn btn-p btn-sm" onclick="saveEmail()">Save Email</button>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px">
+        <div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:10px">🔔 Browser Push</div>
+        <div style="font-size:12.5px;color:var(--t2);margin-bottom:10px">Get instant notifications when new notices are posted.</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px" id="pm-push-st"><span id="pm-push-ic">🔕</span><span id="pm-push-lbl">Disabled</span></div>
+        <button class="btn btn-p btn-sm" style="margin-top:10px" id="pm-push-btn" onclick="togglePush()">Enable Push</button>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn btn-g" onclick="closeProfile()">Close</button></div>
+  </div>
+</div>
+
+<!-- Attendance Print Modal -->
+<div class="overlay" id="print-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="mhd"><div class="mhdt">🖨️ Print Attendance Sheet</div><button class="mc" onclick="document.getElementById('print-modal').classList.remove('open')">×</button></div>
+    <div class="mbody">
+      <div id="print-preview" style="font-family:var(--F);padding:8px"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-g" onclick="document.getElementById('print-modal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-p" onclick="window.print()">🖨️ Print</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════
+//  CONFIG
+// ════════════════════════════════
+let GAS_URL = localStorage.getItem('kcph_gas_url') || '';
+const REFRESH_MS = 120000;
+
+// ════════════════════════════════
+//  STATE
+// ════════════════════════════════
+let user = null, notices = [], fil = 'all', selId = null;
+let readIds = new Set(JSON.parse(localStorage.getItem('kcph_read')||'[]'));
+let notifs = JSON.parse(localStorage.getItem('kcph_notifs')||'[]');
+let attData = {}; // noticeId -> { myRsvp, myCheckin, list }
+let refreshTimer = null;
+
+// ════════════════════════════════
+//  API
+// ════════════════════════════════
+async function api(p)  { if(!GAS_URL) throw 'NO_GAS'; const r=await fetch(GAS_URL+'?'+new URLSearchParams(p)); return r.json(); }
+async function apiP(b) { if(!GAS_URL) throw 'NO_GAS'; const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(b)}); return r.json(); }
+function prog(p){ const f=document.getElementById('lfill'); f.style.width=p+'%'; if(p>=100) setTimeout(()=>f.style.width='0',500); }
+
+// ════════════════════════════════
+//  LOGIN
+// ════════════════════════════════
+async function doLogin(){
+  const id=document.getElementById('li-id').value.trim(), pw=document.getElementById('li-pw').value.trim();
+  const btn=document.getElementById('login-btn'), err=document.getElementById('lerr');
+  err.style.display='none';
+  if(!id||!pw){err.textContent='Please enter your Staff ID and password.';err.style.display='block';return;}
+  btn.innerHTML='<span class="spin"></span> Signing in…';btn.disabled=true;
+  try{
+    prog(40);
+    const res=GAS_URL?await api({action:'login',staffId:id,password:pw}):demoLogin(id,pw);
+    prog(100);
+    if(res.ok){user=res.staff;enterApp();}
+    else{err.textContent=res.error||'Invalid credentials';err.style.display='block';}
+  }catch(e){
+    prog(100);const d=demoLogin(id,pw);
+    if(d.ok){user=d.staff;enterApp();}
+    else{err.textContent='Cannot connect. Demo: S006/pass006 or S008/pass008';err.style.display='block';}
+  }
+  btn.innerHTML='Sign In';btn.disabled=false;
+}
+
+function demoLogin(id,pw){
+  const db={
+    'S001':{name:'Dr. Tum Sambath',dept:"Director's Office",role:'director',pass:'pass001',email:'sambath@kcph.gov.kh'},
+    'S006':{name:'Dr. Yeap Kong',dept:'Technical Office',role:'admin',pass:'pass006',email:'yeapkong@kcph.gov.kh'},
+    'S007':{name:'Mr. Chheng Sokhim',dept:'Administration',role:'admin',pass:'pass007',email:'sokhim@kcph.gov.kh'},
+    'S008':{name:'Head Nurse OPD',dept:'OPD',role:'staff',pass:'pass008',email:'nurse.opd@kcph.gov.kh'},
+    'S010':{name:'Head Nurse Emergency',dept:'Emergency',role:'staff',pass:'pass010',email:'nurse.em@kcph.gov.kh'},
+  };
+  const s=db[id];
+  return (s&&s.pass===pw)?{ok:true,staff:{id,name:s.name,dept:s.dept,role:s.role,email:s.email}}:{ok:false,error:'Invalid credentials'};
+}
+
+function enterApp(){
+  document.getElementById('login-scr').style.display='none';
+  document.getElementById('app-scr').classList.add('on');
+  const ini=user.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('h-av').textContent=ini;
+  document.getElementById('h-name').textContent=user.name;
+  const isA=['admin','director'].includes(user.role);
+  if(isA){
+    ['admin-sbl','admin-post-n','admin-att-n','admin-staff-n','admin-email-n'].forEach(x=>document.getElementById(x).style.display='');
+    document.getElementById('post-btn').style.display='';
+    document.getElementById('admin-stats').style.display='grid';
+    loadDashboard();
+  }
+  if(!GAS_URL) document.getElementById('setup-b').style.display='block';
+  // Show attendance option when meeting selected
+  document.getElementById('f-type').addEventListener('change', e=>{
+    document.getElementById('att-option').style.display=e.target.value==='meeting'?'block':'none';
+  });
+  loadNotices();
+  startRefresh();
+  initPush();
+  renderBadge();
+}
+
+function doLogout(){
+  user=null;notices=[];selId=null;attData={};clearInterval(refreshTimer);
+  document.getElementById('app-scr').classList.remove('on');
+  document.getElementById('login-scr').style.display='flex';
+  document.getElementById('li-id').value='';document.getElementById('li-pw').value='';
+  document.getElementById('lerr').style.display='none';
+}
+
+// ════════════════════════════════
+//  REFRESH
+// ════════════════════════════════
+function startRefresh(){
+  clearInterval(refreshTimer);
+  document.getElementById('live-dot').style.display='';
+  refreshTimer=setInterval(async()=>{
+    const prev=notices.length;
+    await silentLoad();
+    if(notices.length>prev) notices.slice(0,notices.length-prev).forEach(n=>{pushNotif(n);fireBrowserNotif(n);});
+  },REFRESH_MS);
+}
+async function silentLoad(){
+  try{ const r=GAS_URL?await api({action:'getNotices',staffId:user.id}):{ok:true,notices:demoNotices()}; if(r.ok){notices=r.notices;renderList();updateCounts();} }catch(e){}
+}
+
+// ════════════════════════════════
+//  LOAD NOTICES
+// ════════════════════════════════
+async function loadNotices(){
+  const list=document.getElementById('nlist');
+  list.innerHTML=`<div style="text-align:center;padding:40px;color:var(--t3)"><span class="spin spin-dk" style="width:20px;height:20px"></span><div style="margin-top:12px;font-size:12px">Loading…</div></div>`;
+  prog(30);
+  try{
+    const r=GAS_URL?await api({action:'getNotices',staffId:user.id}):{ok:true,notices:demoNotices()};
+    prog(100);
+    if(r.ok){notices=r.notices;renderList();updateCounts();}
+    else list.innerHTML=`<div class="empty"><div class="empty-ic">⚠️</div><div>${r.error}</div></div>`;
+  }catch(e){prog(100);notices=demoNotices();renderList();updateCounts();}
+}
+
+async function loadDashboard(){
+  try{
+    const r=GAS_URL?await api({action:'getDashboard'}):{ok:true,totalNotices:5,ackRate:62,meetingsTracked:2,urgentCount:1};
+    if(r.ok){
+      document.getElementById('s-total').textContent=r.totalNotices;
+      document.getElementById('s-rate').textContent=(r.ackRate||0)+'%';
+      document.getElementById('s-att').textContent=r.meetingsTracked||0;
+      document.getElementById('s-urg').textContent=r.urgentCount||0;
+    }
+  }catch(e){}
+}
+
+// ════════════════════════════════
+//  RENDER LIST
+// ════════════════════════════════
+function getFiltered(){
+  switch(fil){
+    case 'unread':   return notices.filter(n=>!readIds.has(n.id));
+    case 'pending':  return notices.filter(n=>n.requireAck&&!n.myAck);
+    case 'confirmed':return notices.filter(n=>n.myAck);
+    case 'all':      return notices;
+    default:         return notices.filter(n=>n.type===fil);
+  }
+}
+
+function renderList(){
+  const list=document.getElementById('nlist'), f=getFiltered();
+  const isA=['admin','director'].includes(user?.role);
+  document.getElementById('c-meet').textContent=notices.filter(n=>n.type==='meeting').length;
+  if(!f.length){list.innerHTML=`<div class="empty"><div class="empty-ic">📭</div><div style="font-size:12px">No notices here</div></div>`;return;}
+  list.innerHTML=f.map(n=>{
+    const ur=!readIds.has(n.id), tc=['urgent','meeting','policy','training','info'].includes(n.type)?n.type:'';
+    const myA=attData[n.id];
+    let ackH='', attH='';
+    if(isA&&n.requireAck){const p=n.ackCount||0;ackH=`<div class="pw"><div class="pb"><div class="pf" style="width:${p}%"></div></div><span>${p}% acked</span></div>`;}
+    else if(n.requireAck) ackH=n.myAck?`<span class="apill ok">✅ Acknowledged</span>`:`<span class="apill pend">⏳ ACK Required</span>`;
+    else ackH=`<span class="apill na">No ACK needed</span>`;
+    if(n.type==='meeting'&&n.trackAttendance){
+      const ci=myA?.myCheckin;
+      const rv=myA?.myRsvp;
+      if(ci) attH=`<span class="apill att-ok">📍 Checked In</span>`;
+      else if(rv==='attend') attH=`<span class="apill att-pend">✋ RSVP'd</span>`;
+      else if(rv==='absent') attH=`<span class="apill" style="background:var(--rdl);color:var(--rd)">⚫ Apology Sent</span>`;
+      else if(n.allowRsvp) attH=`<span class="apill att-pend">📅 RSVP Needed</span>`;
+    }
+    return `<div class="ncard ${ur?'unread':''} ${tc} ${n.id===selId?'sel':''}" onclick="selNotice('${n.id}')">
+      <div class="nctop"><div class="nctit">${e(n.title)}</div>
+        <div class="nctags"><span class="tag tag-${n.type}">${tL(n.type)}</span>${n.trackAttendance?`<span class="tag" style="background:var(--teal-l);color:var(--teal)">ATTENDANCE</span>`:''}</div>
+      </div>
+      <div class="ncbody">${e(n.body||'').replace(/\n/g,' ')}</div>
+      <div class="ncmeta">
+        <span>👤 ${e(n.author)}</span><span>🕐 ${fDT(n.postedAt)}</span>
+        ${n.eventDate?`<span>📅 ${fDT(n.eventDate)}</span>`:''}
+        ${n.location?`<span>📍 ${e(n.location)}</span>`:''}
+      </div>
+      <div class="ncfoot">${ackH}${attH}${n.ackDeadline?`<span style="font-size:10.5px;color:var(--t3)">Due: ${fD(n.ackDeadline)}</span>`:''}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateCounts(){
+  document.getElementById('c-all').textContent=notices.length;
+  document.getElementById('c-unread').textContent=notices.filter(n=>!readIds.has(n.id)).length;
+  document.getElementById('c-pend').textContent=notices.filter(n=>n.requireAck&&!n.myAck).length;
+  document.getElementById('c-conf').textContent=notices.filter(n=>n.myAck).length;
+}
+
+// ════════════════════════════════
+//  SELECT NOTICE — DETAIL
+// ════════════════════════════════
+async function selNotice(id){
+  selId=id; readIds.add(id); localStorage.setItem('kcph_read',JSON.stringify([...readIds]));
+  renderList(); updateCounts();
+  document.getElementById('demp').style.display='none';
+  const dc=document.getElementById('dcontent'); dc.style.display='block';
+  dc.innerHTML=`<div style="padding:40px;text-align:center;color:var(--t3)"><span class="spin spin-dk" style="width:20px;height:20px"></span></div>`;
+  const n=notices.find(x=>x.id===id); if(!n) return;
+  const isA=['admin','director'].includes(user?.role);
+  let ackList=[], attList=[];
+  if(isA){
+    try{
+      const r=GAS_URL?await api({action:'getNotice',noticeId:id}):{ok:true,ackList:demoAckList(),attList:demoAttList()};
+      if(r.ok){ackList=r.ackList||[];attList=r.attList||[];}
+    }catch(ex){ackList=demoAckList();attList=demoAttList();}
+  }
+  // Load my attendance state
+  if(n.type==='meeting'&&n.trackAttendance&&!attData[id]){
+    attData[id]={myRsvp:null,myCheckin:null};
+    if(GAS_URL){
+      try{
+        const r=await api({action:'getMyAttendance',noticeId:id,staffId:user.id});
+        if(r.ok) attData[id]={myRsvp:r.rsvp,myCheckin:r.checkin};
+      }catch(ex){}
+    }
+  }
+  renderDetail(n,ackList,attList,isA);
+}
+
+// ════════════════════════════════
+//  RENDER DETAIL
+// ════════════════════════════════
+function renderDetail(n, ackList, attList, isA){
+  const conf=ackList.filter(a=>a.status==='confirmed'), pendA=ackList.filter(a=>a.status==='pending');
+  const pct=ackList.length?Math.round(conf.length/ackList.length*100):0;
+  const myAtt=attData[n.id]||{};
+
+  // ACK box
+  let ackBx='';
+  if(n.requireAck&&!isA){
+    ackBx=n.myAck?
+      `<div class="ackbox"><div class="ackbox-t">Acknowledgment</div><div class="ackdone">✅ You acknowledged this notice</div></div>`:
+      `<div class="ackbox"><div class="ackbox-t">Acknowledgment Required</div>
+        <button class="ackbtn" id="ackbtn-${n.id}" onclick="doAck('${n.id}')">✅ I Acknowledge This Notice</button>
+        <div class="acknote">Your name and timestamp will be permanently recorded.</div>
+      </div>`;
+  }
+
+  // ATTENDANCE box (Staff view)
+  let attBx='';
+  if(n.type==='meeting'&&n.trackAttendance&&!isA){
+    const rv=myAtt.myRsvp, ci=myAtt.myCheckin;
+    const ciTime=myAtt.myCheckinTime;
+    let rsvpSection='', checkinSection='';
+
+    if(n.allowRsvp){
+      if(!rv){
+        rsvpSection=`
+          <div style="font-size:12.5px;color:var(--t2);margin-bottom:10px">Will you attend this meeting?</div>
+          <div class="att-rsvp">
+            <button class="rsvp-btn attend" onclick="doRsvp('${n.id}','attend')">✋ Yes, I Will Attend</button>
+            <button class="rsvp-btn absent" onclick="doRsvp('${n.id}','absent')">❌ Send Apology</button>
+          </div>`;
+      } else if(rv==='attend'){
+        rsvpSection=`<div class="rsvp-done">✋ You confirmed attendance. See you at the meeting!</div>
+          <button class="btn btn-g btn-sm" style="margin-top:8px" onclick="doRsvp('${n.id}','absent')">Change to Apology</button>`;
+      } else {
+        rsvpSection=`<div class="rsvp-done absent-c">❌ You sent an apology for this meeting.</div>
+          <div class="fg" style="margin-top:8px">
+            <label class="fl">Reason for absence (optional)</label>
+            <input class="fi" id="absent-reason-${n.id}" placeholder="e.g. On duty / Emergency / Training">
+            <button class="btn btn-g btn-sm" style="margin-top:6px" onclick="saveAbsentReason('${n.id}')">Save Reason</button>
+          </div>
+          <button class="btn btn-g btn-sm" style="margin-top:6px" onclick="doRsvp('${n.id}','attend')">Change to Attending</button>`;
+      }
+    }
+
+    if(!ci){
+      checkinSection=`
+        <div class="checkin-section">
+          <div class="checkin-t">📍 Meeting Check-In</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:8px">Check in when you arrive at the meeting room.</div>
+          <button class="checkin-btn" id="checkin-btn-${n.id}" onclick="doCheckin('${n.id}')">📍 Check In Now</button>
+        </div>`;
+    } else {
+      checkinSection=`
+        <div class="checkin-section">
+          <div class="checkin-t">📍 Check-In Status</div>
+          <div class="checkin-done">✅ You checked in successfully</div>
+          <div class="att-time">Check-in time: ${ciTime?fDT(ciTime):'—'}</div>
+        </div>`;
+    }
+
+    attBx=`<div class="attbox">
+      <div class="attbox-t">📊 Meeting Attendance</div>
+      ${rsvpSection}
+      ${checkinSection}
+    </div>`;
+  }
+
+  // ATTENDANCE TRACKER (Admin)
+  let attTracker='';
+  if(isA&&n.type==='meeting'&&n.trackAttendance){
+    const al=attList.length?attList:demoAttList();
+    const checkedIn=al.filter(a=>a.checkin);
+    const rsvpYes=al.filter(a=>a.rsvp==='attend');
+    const rsvpNo=al.filter(a=>a.rsvp==='absent');
+    const noResponse=al.filter(a=>!a.rsvp&&!a.checkin);
+    const attPct=al.length?Math.round(checkedIn.length/al.length*100):0;
+
+    attTracker=`
+      <div class="att-admin-summary">
+        <div class="att-admin-t">📊 Attendance Tracker</div>
+        <div class="at-stats">
+          <div class="ass"><div class="asn t">${checkedIn.length}</div><div class="asl">Checked In</div></div>
+          <div class="ass"><div class="asn g">${rsvpYes.length}</div><div class="asl">RSVP Yes</div></div>
+          <div class="ass"><div class="asn r">${rsvpNo.length}</div><div class="asl">Apologies</div></div>
+        </div>
+        <div class="fpb"><div class="pb"><div class="pf" style="width:${attPct}%;background:var(--teal)"></div></div><span>${attPct}% checked in</span></div>
+        <div class="at-tabs">
+          <div class="at-tab active" id="attab-all" onclick="switchAttTab('all')">All (${al.length})</div>
+          <div class="at-tab" id="attab-ci" onclick="switchAttTab('ci')">Checked In (${checkedIn.length})</div>
+          <div class="at-tab" id="attab-abs" onclick="switchAttTab('abs')">Absent (${rsvpNo.length})</div>
+          <div class="at-tab" id="attab-none" onclick="switchAttTab('none')">No Response (${noResponse.length})</div>
+        </div>
+        <div class="pl" id="att-person-list">
+          ${renderAttList(al,'all')}
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-g btn-sm btn-fw" onclick="printAttendance('${n.id}')">🖨️ Print Sheet</button>
+          <button class="btn btn-teal btn-sm btn-fw" onclick="exportAttendance('${n.id}')">📥 Export CSV</button>
+        </div>
+      </div>`;
+  }
+
+  // ACK TRACKER (Admin)
+  let ackTracker='';
+  if(isA&&n.requireAck&&ackList.length){
+    ackTracker=`
+      <div class="at">
+        <div class="at-t">Acknowledgment Tracker</div>
+        <div class="at-stats" style="grid-template-columns:1fr 1fr">
+          <div class="ass"><div class="asn g">${conf.length}</div><div class="asl">Confirmed</div></div>
+          <div class="ass"><div class="asn r">${pendA.length}</div><div class="asl">Pending</div></div>
+        </div>
+        <div class="fpb"><div class="pb"><div class="pf" style="width:${pct}%"></div></div><span>${pct}%</span></div>
+        <div class="pl">${ackList.map(a=>`
+          <div class="pi"><div class="pdot ${a.status==='confirmed'?'g':'r'}"></div>
+            <div class="pn">${e(a.staffName||'')}</div>
+            <div class="pd">${e(a.dept||'')}</div>
+            <div class="pt">${a.confirmedAt?fDT(a.confirmedAt):'Pending'}</div>
+          </div>`).join('')}
+        </div>
+        <button class="btn btn-g btn-sm btn-fw" style="margin-top:10px" onclick="doReminder('${n.id}',${pendA.length})">
+          📨 Send Reminder Email (${pendA.length} pending)
+        </button>
+      </div>`;
+  }
+
+  document.getElementById('dcontent').innerHTML=`<div class="dp">
+    <div class="dptags">
+      <span class="tag tag-${n.type}">${tL(n.type)}</span>
+      ${n.dept&&n.dept!=='all'?`<span class="tag tag-info">${e(n.dept)}</span>`:''}
+      ${n.trackAttendance?`<span class="tag" style="background:var(--teal-l);color:var(--teal)">ATTENDANCE TRACKED</span>`:''}
+    </div>
+    <div class="dptit">${e(n.title)}</div>
+    <div class="dpmeta">
+      <span>👤 ${e(n.author)}, ${e(n.authorDept||'')}</span>
+      <span>🕐 ${fDT(n.postedAt)}</span>
+      ${n.eventDate?`<span>📅 ${fDT(n.eventDate)}</span>`:''}
+      ${n.location?`<span>📍 ${e(n.location)}</span>`:''}
+      ${n.ackDeadline?`<span>⏰ ACK by ${fD(n.ackDeadline)}</span>`:''}
+    </div>
+    <div class="dpbody">${e(n.body||'')}</div>
+    ${n.attachment?`<div class="dpatt"><span style="font-size:20px">📎</span><div><div style="font-weight:600;font-size:12px">${e(n.attachment)}</div><div style="font-size:10.5px;color:var(--t3)">Attached document</div></div></div>`:''}
+    ${ackBx}
+    ${attBx}
+    ${attTracker}
+    ${ackTracker}
+  </div>`;
+}
+
+// ════════════════════════════════
+//  ATTENDANCE HELPERS
+// ════════════════════════════════
+function renderAttList(list, tab){
+  let filtered=list;
+  if(tab==='ci') filtered=list.filter(a=>a.checkin);
+  else if(tab==='abs') filtered=list.filter(a=>a.rsvp==='absent');
+  else if(tab==='none') filtered=list.filter(a=>!a.rsvp&&!a.checkin);
+  if(!filtered.length) return `<div style="text-align:center;padding:14px;font-size:12px;color:var(--t3)">No records in this category</div>`;
+  return filtered.map(a=>{
+    let dot='y', status='No Response';
+    if(a.checkin){dot='t';status='Checked In';}
+    else if(a.rsvp==='attend'){dot='g';status='RSVP: Attending';}
+    else if(a.rsvp==='absent'){dot='r';status='Apology Sent';}
+    return `<div>
+      <div class="pi">
+        <div class="pdot ${dot}"></div>
+        <div class="pn">${e(a.staffName||'')}</div>
+        <div class="pd">${e(a.dept||'')}</div>
+        <div class="pt">${a.checkin?fDT(a.checkinTime):a.rsvpTime?fDT(a.rsvpTime):'—'}</div>
+      </div>
+      ${a.rsvp==='absent'&&a.reason?`<div class="pi-reason">Reason: ${e(a.reason)}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+let currentAttTab='all';
+function switchAttTab(tab){
+  currentAttTab=tab;
+  ['all','ci','abs','none'].forEach(t=>{
+    const el=document.getElementById('attab-'+t);
+    if(el) el.classList.toggle('active',t===tab);
+  });
+  const n=notices.find(x=>x.id===selId); if(!n) return;
+  const al=demoAttList();
+  const el=document.getElementById('att-person-list');
+  if(el) el.innerHTML=renderAttList(al,tab);
+}
+
+// ════════════════════════════════
+//  ATTENDANCE ACTIONS
+// ════════════════════════════════
+async function doRsvp(noticeId, decision){
+  try{
+    const r=GAS_URL?await apiP({action:'rsvpAttendance',noticeId,staffId:user.id,staffName:user.name,dept:user.dept,decision}):{ok:true};
+    if(r.ok){
+      if(!attData[noticeId]) attData[noticeId]={};
+      attData[noticeId].myRsvp=decision;
+      const n=notices.find(x=>x.id===noticeId);
+      const msg=decision==='attend'?'✋ RSVP confirmed — See you at the meeting!':'✉️ Apology recorded. Thank you for informing.';
+      showToast(msg,decision==='attend'?'ok':'info');
+      renderList();
+      await selNotice(noticeId);
+    }
+  }catch(ex){showToast('Error saving RSVP. Please try again.','err');}
+}
+
+async function saveAbsentReason(noticeId){
+  const reason=document.getElementById('absent-reason-'+noticeId)?.value.trim()||'';
+  try{
+    if(GAS_URL) await apiP({action:'saveAbsentReason',noticeId,staffId:user.id,reason});
+    showToast('Reason saved','ok');
+  }catch(ex){showToast('Error saving reason','err');}
+}
+
+async function doCheckin(noticeId){
+  const btn=document.getElementById('checkin-btn-'+noticeId);
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span> Checking in…';}
+  try{
+    const r=GAS_URL?await apiP({action:'checkInAttendance',noticeId,staffId:user.id,staffName:user.name,dept:user.dept}):{ok:true,checkinTime:new Date().toISOString()};
+    if(r.ok){
+      if(!attData[noticeId]) attData[noticeId]={};
+      attData[noticeId].myCheckin=true;
+      attData[noticeId].myCheckinTime=r.checkinTime||new Date().toISOString();
+      showToast('📍 Check-in recorded! Welcome to the meeting.','teal');
+      renderList();
+      await selNotice(noticeId);
+    }else{showToast(r.error||'Error during check-in','err');if(btn){btn.disabled=false;btn.textContent='📍 Check In Now';}}
+  }catch(ex){showToast('Network error','err');if(btn){btn.disabled=false;btn.textContent='📍 Check In Now';}}
+}
+
+// ════════════════════════════════
+//  PRINT & EXPORT
+// ════════════════════════════════
+function printAttendance(noticeId){
+  const n=notices.find(x=>x.id===noticeId); if(!n) return;
+  const al=demoAttList();
+  const preview=document.getElementById('print-preview');
+  preview.innerHTML=`
+    <div style="font-family:var(--F);max-width:600px">
+      <div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #1b5c8c;padding-bottom:16px">
+        <div style="font-size:14px;font-weight:700;color:#1b5c8c;letter-spacing:.08em">KAMPONG CHHNANG PROVINCIAL HOSPITAL</div>
+        <div style="font-size:11px;color:#888;margin-top:4px">Official Meeting Attendance Record</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">${e(n.title)}</div>
+        <div style="font-size:12px;color:#555">📅 ${n.eventDate?fDT(n.eventDate):'—'}</div>
+        <div style="font-size:12px;color:#555">📍 ${n.location?e(n.location):'—'}</div>
+        <div style="font-size:12px;color:#555">Posted by: ${e(n.author)}</div>
+        <div style="font-size:12px;color:#555">Printed: ${fDT(new Date().toISOString())}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:#1b5c8c;color:#fff">
+            <th style="padding:8px;text-align:left;border:1px solid #ddd">#</th>
+            <th style="padding:8px;text-align:left;border:1px solid #ddd">Name</th>
+            <th style="padding:8px;text-align:left;border:1px solid #ddd">Department</th>
+            <th style="padding:8px;text-align:left;border:1px solid #ddd">RSVP</th>
+            <th style="padding:8px;text-align:left;border:1px solid #ddd">Check-In Time</th>
+            <th style="padding:8px;text-align:left;border:1px solid #ddd">Signature</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${al.map((a,i)=>`
+            <tr style="background:${i%2===0?'#f9f8f6':'#fff'}">
+              <td style="padding:7px 8px;border:1px solid #ddd">${i+1}</td>
+              <td style="padding:7px 8px;border:1px solid #ddd;font-weight:500">${e(a.staffName)}</td>
+              <td style="padding:7px 8px;border:1px solid #ddd">${e(a.dept)}</td>
+              <td style="padding:7px 8px;border:1px solid #ddd">${a.rsvp==='attend'?'✅ Attending':a.rsvp==='absent'?'❌ Absent':'—'}</td>
+              <td style="padding:7px 8px;border:1px solid #ddd">${a.checkin?fDT(a.checkinTime):'—'}</td>
+              <td style="padding:7px 8px;border:1px solid #ddd;width:100px"></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;color:#555">Meeting Facilitator Signature</div>
+        <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;color:#555">Director / Authorized Signature</div>
+      </div>
+    </div>`;
+  document.getElementById('print-modal').classList.add('open');
+}
+
+function exportAttendance(noticeId){
+  const n=notices.find(x=>x.id===noticeId); if(!n) return;
+  const al=demoAttList();
+  const rows=[['#','Name','Department','RSVP','Check-In Time','Reason for Absence']];
+  al.forEach((a,i)=>rows.push([
+    i+1, a.staffName, a.dept,
+    a.rsvp==='attend'?'Attending':a.rsvp==='absent'?'Absent':'No Response',
+    a.checkin?(a.checkinTime||'Checked In'):'—',
+    a.reason||'—'
+  ]));
+  const csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`Attendance_${n.title.replace(/[^a-z0-9]/gi,'_').slice(0,40)}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('📥 CSV exported','ok');
+}
+
+// ════════════════════════════════
+//  ACKNOWLEDGE
+// ════════════════════════════════
+async function doAck(noticeId){
+  const btn=document.getElementById('ackbtn-'+noticeId);
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span> Confirming…';}
+  prog(40);
+  try{
+    const r=GAS_URL?await apiP({action:'acknowledge',noticeId,staffId:user.id,staffName:user.name,dept:user.dept}):{ok:true};
+    prog(100);
+    if(r.ok){const n=notices.find(x=>x.id===noticeId);if(n) n.myAck=true;renderList();updateCounts();selNotice(noticeId);showToast('✅ Acknowledgment recorded!','ok');}
+    else{showToast(r.error||'Error','err');if(btn){btn.disabled=false;btn.textContent='✅ I Acknowledge This Notice';}}
+  }catch(ex){prog(100);showToast('Network error','err');if(btn){btn.disabled=false;btn.textContent='✅ I Acknowledge This Notice';}}
+}
+
+async function doReminder(noticeId,pendingCount){
+  const btn=event.target;btn.disabled=true;btn.innerHTML='<span class="spin"></span> Sending…';
+  try{
+    const r=GAS_URL?await apiP({action:'sendReminder',noticeId,sentBy:user.name,pendingCount}):{ok:true,emailsSent:pendingCount};
+    if(r.ok) showToast(`📨 Reminder sent to ${r.emailsSent||pendingCount} staff`,'info');
+    else showToast(r.error||'Error','err');
+  }catch(ex){showToast('Network error','err');}
+  btn.disabled=false;btn.textContent=`📨 Send Reminder Email (${pendingCount} pending)`;
+}
+
+// ════════════════════════════════
+//  POST NOTICE
+// ════════════════════════════════
+function openPost(){document.getElementById('post-modal').classList.add('open');}
+function closePost(){document.getElementById('post-modal').classList.remove('open');}
+
+async function submitPost(){
+  const title=document.getElementById('f-title').value.trim(), body=document.getElementById('f-body').value.trim();
+  if(!title||!body){showToast('Title and content required','err');return;}
+  const btn=document.getElementById('post-sub');btn.innerHTML='<span class="spin"></span> Posting…';btn.disabled=true;
+  prog(40);
+  const type=document.getElementById('f-type').value;
+  const payload={action:'postNotice',title,body,type,
+    dept:document.getElementById('f-dept').value,
+    eventDate:document.getElementById('f-date').value||'',
+    location:document.getElementById('f-loc').value.trim(),
+    author:user.name,authorDept:user.dept,
+    attachment:document.getElementById('f-attach').value.trim(),
+    requireAck:document.getElementById('f-ack').checked,
+    ackDeadline:document.getElementById('f-deadline').value,
+    trackAttendance:type==='meeting'&&document.getElementById('f-track-att')?.checked,
+    allowRsvp:type==='meeting'&&document.getElementById('f-rsvp')?.checked
+  };
+  try{
+    const r=GAS_URL?await apiP(payload):{ok:true,emailsSent:14,noticeId:'DEMO'+Date.now()};
+    prog(100);
+    if(r.ok){
+      closePost();
+      ['f-title','f-body','f-date','f-loc','f-attach','f-deadline'].forEach(x=>document.getElementById(x).value='');
+      await loadNotices();loadDashboard();
+      showToast(r.emailsSent?`📢 Posted! 📧 ${r.emailsSent} emails sent.`:'📢 Notice posted!','ok');
+    }else showToast(r.error||'Failed','err');
+  }catch(ex){prog(100);showToast('Network error','err');}
+  btn.innerHTML='📢 Post & Notify Staff';btn.disabled=false;
+}
+
+// ════════════════════════════════
+//  STAFF
+// ════════════════════════════════
+function openStaff(){document.getElementById('staff-modal').classList.add('open');}
+function closeStaff(){document.getElementById('staff-modal').classList.remove('open');}
+async function submitStaff(){
+  const name=document.getElementById('sf-name').value.trim(), email=document.getElementById('sf-email').value.trim();
+  if(!name||!email){showToast('Name and email required','err');return;}
+  try{
+    const r=GAS_URL?await apiP({action:'addStaff',name,dept:document.getElementById('sf-dept').value,role:document.getElementById('sf-role').value,password:document.getElementById('sf-pass').value,email}):{ok:true,staffId:'S0XX'};
+    if(r.ok){closeStaff();showToast(`✅ Staff added: ${name} (${r.staffId})`,'ok');}else showToast(r.error||'Error','err');
+  }catch(ex){showToast('Network error','err');}
+}
+
+// ════════════════════════════════
+//  EMAIL TEST
+// ════════════════════════════════
+function openEmailTest(){document.getElementById('email-modal').classList.add('open');document.getElementById('test-email').value=user?.email||'';}
+function closeEmailTest(){document.getElementById('email-modal').classList.remove('open');}
+async function sendTestEmail(){
+  const email=document.getElementById('test-email').value.trim();
+  if(!email.includes('@')){showToast('Enter a valid email','err');return;}
+  const btn=document.getElementById('test-btn');btn.innerHTML='<span class="spin"></span> Sending…';btn.disabled=true;
+  try{
+    const r=GAS_URL?await api({action:'testEmail',email}):{ok:false,error:'Connect GAS to send real emails'};
+    if(r.ok){showToast('📧 Test sent to '+email,'ok');closeEmailTest();}else showToast(r.error||'Error','err');
+  }catch(ex){showToast('Network error','err');}
+  btn.innerHTML='📧 Send Test';btn.disabled=false;
+}
+
+// ════════════════════════════════
+//  PROFILE
+// ════════════════════════════════
+function openProfile(){
+  document.getElementById('pm-name').textContent=user?.name||'—';
+  document.getElementById('pm-dept').textContent=user?.dept||'—';
+  document.getElementById('pm-id').textContent='Staff ID: '+(user?.id||'—');
+  document.getElementById('pm-email').value=user?.email||'';
+  updatePushUI();
+  document.getElementById('profile-modal').classList.add('open');
+}
+function closeProfile(){document.getElementById('profile-modal').classList.remove('open');}
+async function saveEmail(){
+  const email=document.getElementById('pm-email').value.trim();
+  if(!email.includes('@')){showToast('Enter valid email','err');return;}
+  if(user) user.email=email;
+  try{if(GAS_URL) await apiP({action:'updateStaffEmail',staffId:user.id,email});showToast('📧 Email saved','ok');}
+  catch(ex){showToast('Saved locally','info');}
+}
+
+// ════════════════════════════════
+//  PUSH
+// ════════════════════════════════
+async function initPush(){if('Notification'in window&&Notification.permission==='granted') updatePushUI();}
+async function togglePush(){
+  if(!('Notification'in window)){showToast('Not supported in this browser','err');return;}
+  if(Notification.permission==='denied'){showToast('Blocked — enable in browser settings','err');return;}
+  if(Notification.permission==='default'){const p=await Notification.requestPermission();if(p!=='granted'){showToast('Permission denied','err');return;}}
+  updatePushUI();showToast('🔔 Push notifications enabled!','ok');
+}
+function updatePushUI(){
+  const on='Notification'in window&&Notification.permission==='granted';
+  const tog=document.getElementById('ptog'),lbl=document.getElementById('plbl');
+  if(tog) tog.classList.toggle('on',on);if(lbl) lbl.textContent=on?'Push On':'Enable Push';
+  const pmBtn=document.getElementById('pm-push-btn'),pmSt=document.getElementById('pm-push-st');
+  const pmIc=document.getElementById('pm-push-ic'),pmLbl=document.getElementById('pm-push-lbl');
+  if(on){if(pmBtn)pmBtn.textContent='Disable Push';if(pmSt)pmSt.className='push-st on';if(pmIc)pmIc.textContent='🔔';if(pmLbl)pmLbl.textContent='Enabled';}
+  else{if(pmBtn)pmBtn.textContent='Enable Push';if(pmSt)pmSt.className='push-st off';if(pmIc)pmIc.textContent='🔕';if(pmLbl)pmLbl.textContent='Disabled';}
+}
+function fireBrowserNotif(n){
+  if(!n||Notification.permission!=='granted') return;
+  try{new Notification(`📋 KCPH — ${n.title}`,{body:n.body?n.body.slice(0,100)+'…':'',tag:'kcph-'+n.id,requireInteraction:n.type==='urgent'});}catch(ex){}
+}
+
+// ════════════════════════════════
+//  IN-APP NOTIFICATIONS
+// ════════════════════════════════
+function pushNotif(n){
+  notifs.unshift({id:n.id,title:n.title,type:n.type,time:new Date().toISOString(),read:false});
+  if(notifs.length>30) notifs=notifs.slice(0,30);
+  localStorage.setItem('kcph_notifs',JSON.stringify(notifs));renderBadge();
+}
+function renderBadge(){const u=notifs.filter(n=>!n.read).length;const b=document.getElementById('nbdg');u>0?b.classList.add('on'):b.classList.remove('on');}
+function toggleNd(){const d=document.getElementById('nd-wrap');d.classList.toggle('open');if(d.classList.contains('open')) renderNd();}
+document.addEventListener('click',ev=>{
+  const d=document.getElementById('nd-wrap'),b=document.querySelector('.nbell');
+  if(d&&!d.contains(ev.target)&&b&&!b.contains(ev.target)) d.classList.remove('open');
+});
+function renderNd(){
+  const list=document.getElementById('nd-list');
+  if(!notifs.length){list.innerHTML='<div class="nd-emp">No notifications yet</div>';return;}
+  const colors={urgent:'var(--rd)',meeting:'var(--gn)',policy:'var(--ac)',training:'var(--or)',info:'var(--yw)'};
+  list.innerHTML=notifs.slice(0,15).map(n=>`
+    <div class="nd-itm ${n.read?'':'unr'}" onclick="ndClick('${n.id}')">
+      <div class="nd-it">${e(n.title)}</div>
+      <div class="nd-is"><div class="nd-dot" style="background:${colors[n.type]||'var(--ac)'}"></div>${tL(n.type)} · ${fDT(n.time)}</div>
+    </div>`).join('');
+}
+function ndClick(id){
+  const n=notifs.find(x=>x.id===id);if(n) n.read=true;
+  localStorage.setItem('kcph_notifs',JSON.stringify(notifs));
+  document.getElementById('nd-wrap').classList.remove('open');
+  renderBadge();selNotice(id);setF('all',document.getElementById('nav-all'));
+}
+function clearNotifs(){notifs.forEach(n=>n.read=true);localStorage.setItem('kcph_notifs',JSON.stringify(notifs));renderBadge();renderNd();}
+
+// ════════════════════════════════
+//  FILTERS
+// ════════════════════════════════
+function setF(f,el){
+  fil=f;document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const t={all:'All Notices',unread:'Unread',pending:'Pending Acknowledgment',confirmed:'Confirmed',urgent:'Urgent',meeting:'Meeting Invitations',policy:'Policy',training:'Training',info:'Information'};
+  document.getElementById('page-title').textContent=t[f]||'Notices';renderList();
+}
+function setChip(el,f){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('active'));
+  fil=f;const t={all:'All Notices',urgent:'Urgent',meeting:'Meetings',policy:'Policy',training:'Training',info:'Information'};
+  document.getElementById('page-title').textContent=t[f]||'Notices';renderList();
+}
+
+// ════════════════════════════════
+//  GAS URL
+// ════════════════════════════════
+function saveGasUrl(){
+  const v=document.getElementById('gas-url-inp').value.trim();
+  if(!v.startsWith('https://script.google.com')){showToast('Invalid GAS URL','err');return;}
+  GAS_URL=v;localStorage.setItem('kcph_gas_url',v);
+  document.getElementById('setup-b').style.display='none';
+  showToast('✅ Backend connected!','ok');loadNotices();
+}
+
+// ════════════════════════════════
+//  HELPERS
+// ════════════════════════════════
+function tL(t){return{urgent:'Urgent',meeting:'Meeting',policy:'Policy',info:'Info',training:'Training'}[t]||t;}
+function fDT(s){if(!s)return'—';try{const d=new Date(s);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}catch(ex){return s;}}
+function fD(s){if(!s)return'—';try{return new Date(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}catch(ex){return s;}}
+function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;setTimeout(()=>t.classList.remove('show'),3500);}
+
+// ════════════════════════════════
+//  DEMO DATA
+// ════════════════════════════════
+function demoNotices(){return[
+  {id:'N001',title:'Monthly Quality Improvement Committee Meeting — May 2026',type:'meeting',dept:'all',
+   body:'Dear all department heads,\n\nYou are cordially invited to attend the Monthly QI Committee Meeting.\n\nAgenda:\n1. Q1 2026 clinical indicators review\n2. CHAS accreditation preparation update\n3. IPC program performance\n4. Any other business\n\nAll department heads must attend.\n\nPosted by: Technical Office',
+   eventDate:'2026-05-22T08:00:00',location:'Conference Room, 2nd Floor, Admin Building',
+   author:'Dr. Yeap Kong',authorDept:'Technical Office',postedAt:'2026-05-15T09:00:00',
+   attachment:'QI-Meeting-Agenda-May2026.pdf',requireAck:true,ackDeadline:'2026-05-21',
+   trackAttendance:true,allowRsvp:true,myAck:false,ackCount:43},
+  {id:'N002',title:'URGENT: Mandatory IPC Hand Hygiene Re-Assessment',type:'urgent',dept:'all',
+   body:'All clinical staff must complete hand hygiene re-assessment by 23 May 2026.\n\nMorning: 08:00–09:00 | Afternoon: 14:00–15:00\nIPC Training Room, Ground Floor\n\nNon-compliance will be reported to the Director.',
+   eventDate:'2026-05-23T08:00:00',location:'IPC Training Room',
+   author:'Dr. Uk Molivann',authorDept:'IPC Unit',postedAt:'2026-05-14T14:00:00',
+   attachment:null,requireAck:true,ackDeadline:'2026-05-22',
+   trackAttendance:false,allowRsvp:false,myAck:false,ackCount:29},
+  {id:'N003',title:'New Policy: EMR Privacy & Confidentiality (PP-IPC-EMR-001)',type:'policy',dept:'all',
+   body:'The EMR Privacy and Confidentiality Policy (PP-IPC-EMR-001) is officially approved.\nEffective: 1 June 2026.\nAll staff must read and acknowledge.',
+   eventDate:null,location:null,author:'Dr. Tum Sambath',authorDept:"Director's Office",postedAt:'2026-05-13T10:00:00',
+   attachment:'PP-IPC-EMR-001-v1.pdf',requireAck:true,ackDeadline:'2026-05-30',
+   trackAttendance:false,allowRsvp:false,myAck:true,ackCount:67},
+  {id:'N004',title:'CHAS Self-Assessment Workshop — All Department Heads',type:'training',dept:'all',
+   body:'CHAS Self-Assessment Workshop for all department heads.\n\nTopics: Level A standards, self-assessment tool, gap analysis, action planning.',
+   eventDate:'2026-05-28T08:00:00',location:'Main Conference Hall',
+   author:'Dr. Yeap Kong',authorDept:'Technical Office',postedAt:'2026-05-10T08:00:00',
+   attachment:'CHAS-Workshop.pdf',requireAck:true,ackDeadline:'2026-05-26',
+   trackAttendance:true,allowRsvp:true,myAck:true,ackCount:80},
+  {id:'N005',title:'Public Holiday — Royal Ploughing Ceremony (26–27 May 2026)',type:'info',dept:'all',
+   body:'26–27 May 2026 are public holidays.\nEssential services maintain 24-hour coverage.',
+   eventDate:null,location:null,author:'Mr. Chheng Sokhim',authorDept:'Administration',postedAt:'2026-05-12T09:00:00',
+   attachment:null,requireAck:false,ackDeadline:null,trackAttendance:false,allowRsvp:false,myAck:false,ackCount:0},
+]}
+function demoAckList(){return[
+  {staffName:'Dr. Sok Kong',dept:'Deputy Director',status:'confirmed',confirmedAt:'2026-05-15T10:22:00'},
+  {staffName:'Dr. Von Thevy',dept:'Deputy Director',status:'confirmed',confirmedAt:'2026-05-15T11:05:00'},
+  {staffName:'Dr. Hing Narat',dept:'MCH',status:'confirmed',confirmedAt:'2026-05-16T08:30:00'},
+  {staffName:'Dr. Uk Molivann',dept:'IPC Unit',status:'pending',confirmedAt:null},
+  {staffName:'Mr. Chheng Sokhim',dept:'Administration',status:'pending',confirmedAt:null},
+  {staffName:'Head Nurse OPD',dept:'OPD',status:'confirmed',confirmedAt:'2026-05-16T14:10:00'},
+  {staffName:'Head Nurse IPD',dept:'IPD',status:'pending',confirmedAt:null},
+]}
+function demoAttList(){return[
+  {staffName:'Dr. Sok Kong',dept:'Deputy Director',rsvp:'attend',rsvpTime:'2026-05-15T10:30:00',checkin:true,checkinTime:'2026-05-22T07:58:00',reason:''},
+  {staffName:'Dr. Von Thevy',dept:'Deputy Director',rsvp:'attend',rsvpTime:'2026-05-15T11:10:00',checkin:true,checkinTime:'2026-05-22T08:02:00',reason:''},
+  {staffName:'Dr. Hing Narat',dept:'MCH',rsvp:'attend',rsvpTime:'2026-05-16T09:00:00',checkin:true,checkinTime:'2026-05-22T08:05:00',reason:''},
+  {staffName:'Dr. Uk Molivann',dept:'IPC Unit',rsvp:'attend',rsvpTime:'2026-05-17T08:00:00',checkin:false,checkinTime:null,reason:''},
+  {staffName:'Mr. Chheng Sokhim',dept:'Administration',rsvp:'absent',rsvpTime:'2026-05-16T14:00:00',checkin:false,checkinTime:null,reason:'Administrative emergency'},
+  {staffName:'Head Nurse OPD',dept:'OPD',rsvp:'attend',rsvpTime:'2026-05-16T14:15:00',checkin:true,checkinTime:'2026-05-22T08:10:00',reason:''},
+  {staffName:'Head Nurse IPD',dept:'IPD',rsvp:null,rsvpTime:null,checkin:false,checkinTime:null,reason:''},
+  {staffName:'Head Nurse Emergency',dept:'Emergency',rsvp:'absent',rsvpTime:'2026-05-17T07:00:00',checkin:false,checkinTime:null,reason:'On duty / emergency coverage'},
+  {staffName:'Head Nurse ICU',dept:'ICU',rsvp:null,rsvpTime:null,checkin:false,checkinTime:null,reason:''},
+  {staffName:'Head Pharmacist',dept:'Pharmacy',rsvp:'attend',rsvpTime:'2026-05-16T10:00:00',checkin:true,checkinTime:'2026-05-22T08:08:00',reason:''},
+]}
+
+renderBadge();
+</script>
+</body>
+</html>

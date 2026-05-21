@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KCPH Notice Board — Performance Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── SCREEN STYLES ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ac:#4361ee;--acl:#eef2ff;--gn:#0e9f6e;--gnl:#def7ec;
+  --rd:#e02424;--rdl:#fde8e8;--yw:#c27803;--ywl:#fdf6b2;
+  --or:#c05621;--orl:#feecdc;--tl:#0694a2;--tll:#d5f3f6;
+  --tx:#111827;--t2:#4b5563;--t3:#9ca3af;
+  --sur:#fff;--bg:#f3f4f6;--bdr:#e5e7eb;
+  --F:'Nunito',sans-serif;--M:'Courier New',monospace;
+}
+body{font-family:var(--F);background:var(--bg);color:var(--tx);font-size:15px;line-height:1.55;min-height:100vh}
+
+/* ── LOGIN ── */
+#login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#0f0c29,#302b63,#24243e);padding:20px}
+.login-card{background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.login-ic{width:64px;height:64px;background:linear-gradient(135deg,#4361ee,#7c3aed);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;box-shadow:0 6px 20px rgba(67,97,238,.4)}
+.login-title{font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--t3);text-align:center;margin-bottom:24px}
+.fl{display:block;font-size:13px;font-weight:700;color:var(--t2);margin-bottom:5px}
+.fi{display:block;width:100%;padding:12px 13px;border:2px solid var(--bdr);border-radius:10px;font-family:var(--F);font-size:15px;background:#f9fafb;outline:none;-webkit-appearance:none;margin-bottom:12px}
+.fi:focus{border-color:var(--ac);background:#fff}
+.login-btn{display:block;width:100%;padding:13px;background:linear-gradient(135deg,#4361ee,#3a56d4);color:#fff;border:none;border-radius:10px;font-family:var(--F);font-size:16px;font-weight:800;cursor:pointer;-webkit-appearance:none;box-shadow:0 4px 14px rgba(67,97,238,.35)}
+.login-btn:active{opacity:.85}
+#login-err{color:var(--rd);font-size:13px;font-weight:700;text-align:center;margin-top:10px;display:none;padding:8px;background:var(--rdl);border-radius:8px}
+
+/* ── APP ── */
+#app-wrap{display:none}
+.topbar{background:linear-gradient(135deg,#4361ee,#3a56d4);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(67,97,238,.35)}
+.tb-l{display:flex;align-items:center;gap:10px}
+.tb-ic{font-size:22px}.tb-title{font-size:16px;font-weight:800}.tb-sub{font-size:11px;opacity:.65}
+.tb-out{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);border-radius:8px;padding:5px 12px;font-size:13px;font-weight:700;font-family:var(--F);color:#fff;cursor:pointer;-webkit-appearance:none}
+.tb-out:hover{background:rgba(255,255,255,.25)}
+
+.main{max-width:1100px;margin:0 auto;padding:20px}
+
+/* ── CONTROLS ── */
+.controls{background:var(--sur);border:2px solid var(--bdr);border-radius:14px;padding:20px;margin-bottom:20px}
+.ctrl-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.ctrl-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px}
+.ctrl-label{font-size:12px;font-weight:700;color:var(--t2)}
+.ctrl-select,.ctrl-input{padding:10px 12px;border:2px solid var(--bdr);border-radius:9px;font-family:var(--F);font-size:14px;background:var(--bg);outline:none;-webkit-appearance:none;cursor:pointer}
+.ctrl-select:focus,.ctrl-input:focus{border-color:var(--ac);background:#fff}
+.gen-btn{padding:10px 24px;background:linear-gradient(135deg,#4361ee,#3a56d4);color:#fff;border:none;border-radius:9px;font-family:var(--F);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 3px 10px rgba(67,97,238,.3);white-space:nowrap;-webkit-appearance:none;display:flex;align-items:center;gap:7px}
+.gen-btn:active{opacity:.85}
+.gen-btn:disabled{background:#d1d5db;box-shadow:none;cursor:not-allowed}
+.pdf-btn{padding:10px 20px;background:linear-gradient(135deg,#e02424,#c81e1e);color:#fff;border:none;border-radius:9px;font-family:var(--F);font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 3px 10px rgba(224,36,36,.3);white-space:nowrap;-webkit-appearance:none;display:flex;align-items:center;gap:7px}
+.pdf-btn:active{opacity:.85}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:60px;color:var(--t3)}
+.spin{display:inline-block;width:28px;height:28px;border:3px solid rgba(67,97,238,.2);border-top-color:var(--ac);border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ── REPORT ── */
+#report-output{display:none}
+
+/* ── SUMMARY CARDS ── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:600px){.summary-grid{grid-template-columns:1fr 1fr}}
+.scard{background:var(--sur);border:2px solid var(--bdr);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+.scard::after{content:attr(data-icon);position:absolute;top:10px;right:12px;font-size:26px;opacity:.4}
+.sc-n{font-size:32px;font-weight:900;font-family:var(--M);margin-bottom:4px}
+.sc-n.b{color:var(--ac)}.sc-n.g{color:var(--gn)}.sc-n.r{color:var(--rd)}.sc-n.t{color:var(--tl)}.sc-n.y{color:var(--yw)}
+.sc-l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3)}
+
+/* ── SECTION ── */
+.section{background:var(--sur);border:2px solid var(--bdr);border-radius:14px;margin-bottom:16px;overflow:hidden}
+.sec-hd{padding:14px 18px;border-bottom:2px solid var(--bdr);display:flex;align-items:center;gap:10px;background:#fafbff}
+.sec-ic{font-size:20px}
+.sec-title{font-size:15px;font-weight:800}
+.sec-body{padding:16px 18px}
+
+/* ── TYPE BREAKDOWN ── */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:500px){.type-grid{grid-template-columns:1fr 1fr}}
+.tcard{border-radius:10px;padding:12px;text-align:center}
+.tcard.urgent{background:var(--rdl);border:2px solid #fc8181}
+.tcard.meeting{background:var(--gnl);border:2px solid #84e1bc}
+.tcard.policy{background:var(--acl);border:2px solid #93c5fd}
+.tcard.training{background:var(--orl);border:2px solid #f6ad55}
+.tcard.info{background:var(--ywl);border:2px solid #f0c040}
+.tcard.reminders{background:#f5f3ff;border:2px solid #c4b5fd}
+.tc-n{font-size:28px;font-weight:900;font-family:var(--M)}
+.tc-l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.tcard.urgent .tc-n,.tcard.urgent .tc-l{color:var(--rd)}
+.tcard.meeting .tc-n,.tcard.meeting .tc-l{color:var(--gn)}
+.tcard.policy .tc-n,.tcard.policy .tc-l{color:var(--ac)}
+.tcard.training .tc-n,.tcard.training .tc-l{color:var(--or)}
+.tcard.info .tc-n,.tcard.info .tc-l{color:var(--yw)}
+.tcard.reminders .tc-n,.tcard.reminders .tc-l{color:#7c3aed}
+
+/* ── TABLES ── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f1f3ff;color:var(--t2);font-weight:800;padding:9px 10px;text-align:left;border-bottom:2px solid var(--bdr);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--bdr);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbff}
+.rate-bar-wrap{display:flex;align-items:center;gap:8px}
+.rate-bar{height:7px;border-radius:4px;background:var(--bdr);flex:1;overflow:hidden}
+.rate-fill{height:100%;border-radius:4px;transition:width .5s}
+.tag{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:800;text-transform:uppercase}
+.tag.urgent{background:var(--rdl);color:var(--rd)}
+.tag.meeting{background:var(--gnl);color:var(--gn)}
+.tag.policy{background:var(--acl);color:var(--ac)}
+.tag.training{background:var(--orl);color:var(--or)}
+.tag.info{background:var(--ywl);color:var(--yw)}
+.pct-green{color:var(--gn);font-weight:800}
+.pct-yellow{color:var(--yw);font-weight:800}
+.pct-red{color:var(--rd);font-weight:800}
+
+/* ── PROGRESS BAR ── */
+.big-progress{margin:12px 0}
+.big-bar{height:16px;border-radius:8px;background:var(--bdr);overflow:hidden;margin-bottom:6px}
+.big-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--gn),#34d399);transition:width .8s}
+.prog-labels{display:flex;justify-content:space-between;font-size:12px;color:var(--t3);font-weight:600}
+
+/* ── EMPTY ── */
+.empty-cell{color:var(--t3);font-style:italic;font-size:13px}
+
+/* ═══════════════════════════════════
+   PRINT / PDF STYLES
+   ═══════════════════════════════════ */
+@media print {
+  body{background:#fff;font-size:11px;line-height:1.4;color:#000}
+  .topbar,.controls,#login-wrap,.no-print,.pdf-btn,.gen-btn,.tb-out{display:none!important}
+  #app-wrap,#report-output{display:block!important}
+  .main{padding:0;max-width:100%}
+  .summary-grid{grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+  .scard{border:1px solid #ccc;border-radius:6px;padding:10px;break-inside:avoid}
+  .sc-n{font-size:22px}
+  .section{border:1px solid #ccc;border-radius:6px;margin-bottom:10px;break-inside:avoid}
+  .sec-hd{padding:8px 12px;background:#f0f4ff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sec-body{padding:10px 12px}
+  .type-grid{grid-template-columns:repeat(3,1fr);gap:6px}
+  .tcard{border-radius:5px;padding:8px;border-width:1px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tcard.urgent{background:#fff0f0!important}.tcard.meeting{background:#f0fff8!important}
+  .tcard.policy{background:#f0f4ff!important}.tcard.training{background:#fff4ec!important}
+  .tcard.info{background:#fffbf0!important}.tcard.reminders{background:#f5f3ff!important}
+  .tc-n{font-size:20px}
+  th{background:#e8edff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:10px;padding:6px 8px}
+  td{font-size:10px;padding:5px 8px}
+  .rate-bar{height:5px}
+  .print-header{display:block!important}
+  .print-footer{display:block!important}
+  tr:hover td{background:transparent!important}
+  @page{size:A4;margin:15mm 12mm}
+}
+
+/* Print header/footer (hidden on screen) */
+.print-header{display:none;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1b5c8c}
+.print-footer{display:none;text-align:center;font-size:9px;color:#999;margin-top:16px;padding-top:8px;border-top:1px solid #ddd}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-wrap">
+  <div class="login-card">
+    <div class="login-ic">📊</div>
+    <div class="login-title">Performance Report</div>
+    <div class="login-sub">KCPH Notice Board · Admin access only</div>
+    <label class="fl">🪪 Admin Staff ID</label>
+    <input class="fi" id="li-id" type="text" placeholder="S001 – S007" oninput="this.value=this.value.toUpperCase()">
+    <label class="fl">🔒 Password</label>
+    <input class="fi" id="li-pw" type="password" placeholder="••••••••">
+    <button class="login-btn" type="button" onclick="doLogin()">Sign In →</button>
+    <div id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-wrap">
+
+  <!-- Top bar (hidden on print) -->
+  <div class="topbar no-print">
+    <div class="tb-l">
+      <div class="tb-ic">📊</div>
+      <div><div class="tb-title">Notice Board — Performance Report</div><div class="tb-sub">Kampong Chhnang Provincial Hospital</div></div>
+    </div>
+    <button class="tb-out" onclick="doLogout()">↩ Sign Out</button>
+  </div>
+
+  <div class="main">
+
+    <!-- Print header (only visible when printing) -->
+    <div class="print-header">
+      <div style="font-size:14px;font-weight:900;color:#1b5c8c">KAMPONG CHHNANG PROVINCIAL HOSPITAL</div>
+      <div style="font-size:11px;color:#555;margin-top:3px">Internal Notice Board — Performance Report</div>
+      <div id="ph-period" style="font-size:12px;color:#333;margin-top:4px;font-weight:700"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls no-print">
+      <div class="ctrl-row">
+        <div class="ctrl-group">
+          <div class="ctrl-label">Report Period</div>
+          <select class="ctrl-select" id="ctrl-period" onchange="onPeriodChange()">
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <div class="ctrl-label">Year</div>
+          <select class="ctrl-select" id="ctrl-year"></select>
+        </div>
+        <div class="ctrl-group" id="ctrl-month-grp">
+          <div class="ctrl-label">Month</div>
+          <select class="ctrl-select" id="ctrl-month">
+            <option value="1">January</option><option value="2">February</option>
+            <option value="3">March</option><option value="4">April</option>
+            <option value="5">May</option><option value="6">June</option>
+            <option value="7">July</option><option value="8">August</option>
+            <option value="9">September</option><option value="10">October</option>
+            <option value="11">November</option><option value="12">December</option>
+          </select>
+        </div>
+        <div class="ctrl-group" id="ctrl-quarter-grp" style="display:none">
+          <div class="ctrl-label">Quarter</div>
+          <select class="ctrl-select" id="ctrl-quarter">
+            <option value="1">Q1 (Jan–Mar)</option><option value="2">Q2 (Apr–Jun)</option>
+            <option value="3">Q3 (Jul–Sep)</option><option value="4">Q4 (Oct–Dec)</option>
+          </select>
+        </div>
+        <button class="gen-btn" id="gen-btn" onclick="generateReport()">📊 Generate Report</button>
+        <button class="pdf-btn no-print" id="pdf-btn" onclick="exportPDF()" style="display:none">🖨️ Export PDF</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading" style="display:none">
+      <div class="spin" style="display:block;margin:0 auto 16px"></div>
+      <div style="font-weight:600;color:var(--t3)">Generating report…</div>
+    </div>
+
+    <!-- Report Output -->
+    <div id="report-output">
+
+      <!-- SUMMARY CARDS -->
+      <div class="summary-grid">
+        <div class="scard" data-icon="📋"><div class="sc-n b" id="r-total">—</div><div class="sc-l">Total Notices</div></div>
+        <div class="scard" data-icon="✅"><div class="sc-n g" id="r-ackrate">—</div><div class="sc-l">ACK Rate</div></div>
+        <div class="scard" data-icon="👥"><div class="sc-n t" id="r-staff">—</div><div class="sc-l">Active Staff</div></div>
+        <div class="scard" data-icon="📨"><div class="sc-n y" id="r-remind">—</div><div class="sc-l">Reminders Sent</div></div>
+      </div>
+
+      <!-- NOTICE BREAKDOWN -->
+      <div class="section">
+        <div class="sec-hd"><div class="sec-ic">📋</div><div class="sec-title">Notice Breakdown by Category</div></div>
+        <div class="sec-body">
+          <div class="type-grid">
+            <div class="tcard urgent"><div class="tc-n" id="bt-urgent">0</div><div class="tc-l">🚨 Urgent</div></div>
+            <div class="tcard meeting"><div class="tc-n" id="bt-meeting">0</div><div class="tc-l">📅 Meetings</div></div>
+            <div class="tcard policy"><div class="tc-n" id="bt-policy">0</div><div class="tc-l">📄 Policy</div></div>
+            <div class="tcard training"><div class="tc-n" id="bt-training">0</div><div class="tc-l">🎓 Training</div></div>
+            <div class="tcard info"><div class="tc-n" id="bt-info">0</div><div class="tc-l">ℹ️ Info</div></div>
+            <div class="tcard reminders"><div class="tc-n" id="bt-remind">0</div><div class="tc-l">📨 Reminders</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OVERALL ACK PROGRESS -->
+      <div class="section">
+        <div class="sec-hd"><div class="sec-ic">✅</div><div class="sec-title">Overall Acknowledgment Compliance</div></div>
+        <div class="sec-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div style="font-size:14px;font-weight:700;color:var(--t2)" id="ack-label">—</div>
+            <div style="font-size:24px;font-weight:900;font-family:var(--M)" id="ack-pct">—%</div>
+          </div>
+          <div class="big-bar"><div class="big-fill" id="ack-bar" style="width:0%"></div></div>
+          <div class="prog-labels"><div id="ack-prog-left">0 acknowledged</div><div id="ack-prog-right">0 total required</div></div>
+        </div>
+      </div>
+
+      <!-- NOTICE DETAIL TABLE -->
+      <div class="section">
+        <div class="sec-hd"><div class="sec-ic">📋</div><div class="sec-title">Notice Details & Acknowledgment Status</div></div>
+        <div class="sec-body" style="padding:0;overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Title</th><th>Type</th><th>Author</th><th>Posted</th>
+                <th>ACK Required</th><th>Confirmed</th><th>Rate</th>
+              </tr>
+            </thead>
+            <tbody id="notice-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STAFF COMPLIANCE TABLE -->
+      <div class="section">
+        <div class="sec-hd"><div class="sec-ic">👥</div><div class="sec-title">Staff Acknowledgment Compliance</div></div>
+        <div class="sec-body" style="padding:0;overflow-x:auto">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Staff Name</th><th>Department</th><th>Acknowledged</th><th>Required</th><th>Rate</th><th>Status</th></tr>
+            </thead>
+            <tbody id="staff-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /report-output -->
+
+    <!-- Print footer -->
+    <div class="print-footer">
+      KCPH Notice Board · Performance Report · Generated: <span id="pf-date"></span> · Technical Office, Kampong Chhnang Provincial Hospital
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app-wrap -->
+
+<script>
+'use strict';
+var GAS = 'https://script.google.com/macros/s/AKfycbydJAxlAXxJ4YpQ6nmBNnEo93KfAjng0aARb8Bv3icqzcxL4fed-TgZjBvsuX95Y6k/exec';
+var ADMIN_IDS = ['S001','S002','S003','S004','S005','S006','S007'];
+var ADMIN_CREDS = {
+  'S001':'pass001','S002':'pass002','S003':'pass003','S004':'pass004',
+  'S005':'pass005','S006':'pass006','S007':'pass007'
+};
+var user = null;
+var _cn = 0;
+
+// ── JSONP API ──
+function gasCall(params) {
+  return new Promise(function(resolve, reject) {
+    var cb = '_rc' + (++_cn) + '_' + Date.now();
+    var timer = setTimeout(function() {
+      delete window[cb];
+      var s = document.getElementById(cb);
+      if (s) s.parentNode.removeChild(s);
+      fetch(GAS + '?' + toP(params), {method:'GET', redirect:'follow'})
+        .then(function(r){return r.text();})
+        .then(function(t){try{resolve(JSON.parse(t.replace(/^\)\]\}'/,'').trim()));}catch(e){reject(e);}})
+        .catch(reject);
+    }, 12000);
+    window[cb] = function(data) {
+      clearTimeout(timer); delete window[cb];
+      var s = document.getElementById(cb); if (s) s.parentNode.removeChild(s);
+      resolve(data);
+    };
+    var script = document.createElement('script');
+    script.id = cb;
+    script.src = GAS + '?' + toP(Object.assign({}, params, {callback:cb}));
+    script.onerror = function() {
+      clearTimeout(timer); delete window[cb]; this.parentNode.removeChild(this); reject(new Error('Load failed'));
+    };
+    document.head.appendChild(script);
+  });
+}
+function toP(o) { return Object.keys(o).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(o[k]);}).join('&'); }
+
+// ── LOGIN ──
+function doLogin() {
+  var id = document.getElementById('li-id').value.trim().toUpperCase();
+  var pw = document.getElementById('li-pw').value.trim();
+  var err = document.getElementById('login-err');
+  err.style.display = 'none';
+  if (!id || !pw) { showErr('Please enter your Staff ID and password.'); return; }
+  if (ADMIN_IDS.indexOf(id) < 0) { showErr('Only admin accounts (S001–S007) can access reports.'); return; }
+  if (ADMIN_CREDS[id] !== pw) { showErr('Incorrect password. Please try again.'); return; }
+  user = {id:id};
+  document.getElementById('login-wrap').style.display = 'none';
+  document.getElementById('app-wrap').style.display = 'block';
+  initYears();
+  onPeriodChange();
+  function showErr(m) { err.textContent = m; err.style.display = 'block'; }
+}
+document.addEventListener('DOMContentLoaded', function() {
+  ['li-id','li-pw'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', function(e) { if (e.key==='Enter') doLogin(); });
+  });
+});
+function doLogout() {
+  user = null;
+  document.getElementById('app-wrap').style.display = 'none';
+  document.getElementById('login-wrap').style.display = 'flex';
+  document.getElementById('report-output').style.display = 'none';
+  document.getElementById('pdf-btn').style.display = 'none';
+  document.getElementById('li-pw').value = '';
+}
+
+// ── INIT YEAR SELECTOR ──
+function initYears() {
+  var sel = document.getElementById('ctrl-year');
+  var now = new Date().getFullYear();
+  sel.innerHTML = '';
+  for (var y = now; y >= now - 4; y--) {
+    var opt = document.createElement('option');
+    opt.value = y; opt.textContent = y; sel.appendChild(opt);
+  }
+  sel.value = now;
+  document.getElementById('ctrl-month').value = new Date().getMonth() + 1;
+  document.getElementById('ctrl-quarter').value = Math.ceil((new Date().getMonth() + 1) / 3);
+}
+function onPeriodChange() {
+  var p = document.getElementById('ctrl-period').value;
+  document.getElementById('ctrl-month-grp').style.display   = p === 'monthly'   ? '' : 'none';
+  document.getElementById('ctrl-quarter-grp').style.display = p === 'quarterly' ? '' : 'none';
+}
+
+// ── GENERATE REPORT ──
+function generateReport() {
+  var period  = document.getElementById('ctrl-period').value;
+  var year    = document.getElementById('ctrl-year').value;
+  var month   = document.getElementById('ctrl-month').value;
+  var quarter = document.getElementById('ctrl-quarter').value;
+  var btn = document.getElementById('gen-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spin" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px"></span> Loading…';
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('report-output').style.display = 'none';
+  document.getElementById('pdf-btn').style.display = 'none';
+
+  var params = {action:'getReport', period:period, year:year, month:month, quarter:quarter};
+  gasCall(params)
+    .then(function(r) {
+      if (r && r.ok) {
+        renderReport(r);
+      } else {
+        alert('Error: ' + (r && r.error ? r.error : 'Could not load report. Please check GAS is deployed.'));
+      }
+    })
+    .catch(function(e) {
+      alert('Network error: ' + e.message + '\n\nMake sure the GAS is deployed and reachable.');
+    })
+    .finally(function() {
+      btn.disabled = false; btn.innerHTML = '📊 Generate Report';
+      document.getElementById('loading').style.display = 'none';
+    });
+}
+
+// ── RENDER REPORT ──
+function renderReport(d) {
+  // Period label
+  var periodLabel = periodStr(d);
+  document.getElementById('ph-period').textContent = 'Period: ' + periodLabel;
+  document.getElementById('pf-date').textContent = fDT(new Date().toISOString());
+
+  // Summary cards
+  document.getElementById('r-total').textContent  = d.totalNotices;
+  document.getElementById('r-ackrate').textContent = d.overallAckRate + '%';
+  document.getElementById('r-staff').textContent  = d.totalStaff;
+  document.getElementById('r-remind').textContent = d.remindersIssued;
+
+  // By type
+  document.getElementById('bt-urgent').textContent   = d.byType.urgent   || 0;
+  document.getElementById('bt-meeting').textContent  = d.byType.meeting  || 0;
+  document.getElementById('bt-policy').textContent   = d.byType.policy   || 0;
+  document.getElementById('bt-training').textContent = d.byType.training || 0;
+  document.getElementById('bt-info').textContent     = d.byType.info     || 0;
+  document.getElementById('bt-remind').textContent   = d.remindersIssued || 0;
+
+  // ACK progress
+  var req = d.requireAckCount || 0;
+  var total = req * d.totalStaff;
+  var actual = d.totalAcksRecorded || 0;
+  var rate = d.overallAckRate;
+  document.getElementById('ack-label').textContent = req + ' notice' + (req!==1?'s':'') + ' required acknowledgment from ' + d.totalStaff + ' staff';
+  document.getElementById('ack-pct').textContent = rate + '%';
+  document.getElementById('ack-bar').style.width = rate + '%';
+  document.getElementById('ack-bar').style.background = rate >= 80 ? 'linear-gradient(90deg,#0e9f6e,#34d399)' : rate >= 50 ? 'linear-gradient(90deg,#c27803,#f0c040)' : 'linear-gradient(90deg,#e02424,#fc8181)';
+  document.getElementById('ack-prog-left').textContent = actual + ' acknowledgments recorded';
+  document.getElementById('ack-prog-right').textContent = total + ' total expected';
+
+  // Notice detail table
+  var noticeRows = '';
+  if (!d.noticeDetails || !d.noticeDetails.length) {
+    noticeRows = '<tr><td colspan="7" class="empty-cell" style="text-align:center;padding:24px">No notices posted in this period</td></tr>';
+  } else {
+    d.noticeDetails.forEach(function(n) {
+      var rateClass = n.ackRate === null ? '' : n.ackRate >= 80 ? 'pct-green' : n.ackRate >= 50 ? 'pct-yellow' : 'pct-red';
+      var rateBar = n.ackRate !== null ?
+        '<div class="rate-bar-wrap"><div class="rate-bar"><div class="rate-fill" style="width:' + n.ackRate + '%;background:' + (n.ackRate>=80?'#0e9f6e':n.ackRate>=50?'#c27803':'#e02424') + '"></div></div><span class="' + rateClass + '">' + n.ackRate + '%</span></div>' :
+        '<span style="color:var(--t3);font-size:12px">N/A</span>';
+      noticeRows += '<tr>' +
+        '<td style="max-width:220px;font-weight:700">' + e(n.title) + '</td>' +
+        '<td><span class="tag ' + e(n.type) + '">' + tL(n.type) + '</span></td>' +
+        '<td>' + e(n.author) + '</td>' +
+        '<td style="white-space:nowrap">' + fD(n.postedAt) + '</td>' +
+        '<td style="text-align:center">' + (n.requireAck ? '✅ Yes' + (n.ackDeadline ? '<br><span style="font-size:10px;color:var(--t3)">by '+fD(n.ackDeadline)+'</span>' : '') : '<span style="color:var(--t3)">No</span>') + '</td>' +
+        '<td style="text-align:center;font-family:var(--M)">' + (n.requireAck ? n.ackCount : '—') + '</td>' +
+        '<td style="min-width:120px">' + rateBar + '</td>' +
+        '</tr>';
+    });
+  }
+  document.getElementById('notice-tbody').innerHTML = noticeRows;
+
+  // Staff table
+  var staffRows = '';
+  if (!d.staffList || !d.staffList.length) {
+    staffRows = '<tr><td colspan="7" class="empty-cell" style="text-align:center;padding:24px">No staff data</td></tr>';
+  } else {
+    d.staffList.forEach(function(s, i) {
+      var rateClass = s.required === 0 ? '' : s.rate >= 80 ? 'pct-green' : s.rate >= 50 ? 'pct-yellow' : 'pct-red';
+      var status = s.required === 0 ? '<span style="color:var(--t3);font-size:12px">N/A</span>' :
+        s.rate === 100 ? '<span style="color:var(--gn);font-weight:800">✅ Full</span>' :
+        s.rate >= 80   ? '<span style="color:var(--gn);font-weight:700">🟢 Good</span>' :
+        s.rate >= 50   ? '<span style="color:var(--yw);font-weight:700">🟡 Partial</span>' :
+                         '<span style="color:var(--rd);font-weight:700">🔴 Low</span>';
+      staffRows += '<tr>' +
+        '<td style="font-family:var(--M);color:var(--t3)">' + (i+1) + '</td>' +
+        '<td style="font-weight:700">' + e(s.name) + '</td>' +
+        '<td>' + e(s.dept) + '</td>' +
+        '<td style="text-align:center;font-family:var(--M)">' + s.acked + '</td>' +
+        '<td style="text-align:center;font-family:var(--M)">' + s.required + '</td>' +
+        '<td><div class="rate-bar-wrap"><div class="rate-bar"><div class="rate-fill" style="width:' + (s.required===0?100:s.rate) + '%;background:' + (s.rate>=80?'#0e9f6e':s.rate>=50?'#c27803':'#e02424') + '"></div></div><span class="' + rateClass + '">' + (s.required===0?'—':s.rate+'%') + '</span></div></td>' +
+        '<td>' + status + '</td>' +
+        '</tr>';
+    });
+  }
+  document.getElementById('staff-tbody').innerHTML = staffRows;
+
+  document.getElementById('report-output').style.display = 'block';
+  document.getElementById('pdf-btn').style.display = 'flex';
+}
+
+// ── EXPORT PDF ──
+function exportPDF() {
+  // Update page title for PDF filename
+  var period = periodStr({
+    period: document.getElementById('ctrl-period').value,
+    year: parseInt(document.getElementById('ctrl-year').value),
+    month: parseInt(document.getElementById('ctrl-month').value),
+    quarter: parseInt(document.getElementById('ctrl-quarter').value)
+  });
+  var orig = document.title;
+  document.title = 'KCPH Notice Board Report — ' + period;
+  window.print();
+  document.title = orig;
+}
+
+// ── HELPERS ──
+function periodStr(d) {
+  var months = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+  if (d.period === 'yearly')    return 'Year ' + d.year;
+  if (d.period === 'quarterly') return 'Q' + d.quarter + ' ' + d.year;
+  return months[d.month] + ' ' + d.year;
+}
+function tL(t) { return {urgent:'Urgent',meeting:'Meeting',policy:'Policy',info:'Info',training:'Training'}[t] || t; }
+function e(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fD(s) {
+  if (!s) return '—';
+  try { return new Date(s).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+  catch(e) { return String(s); }
+}
+function fDT(s) {
+  if (!s) return '—';
+  try {
+    var d = new Date(s);
+    return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + ' ' +
+           d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) { return String(s); }
+}
+</script>
+</body>
+</html>

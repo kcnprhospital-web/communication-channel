@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KCPH Notice Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --indigo:#4f5bd5; --indigo-dark:#3a44a8; --bg:#2e3470;
+    --card:#ffffff; --ink:#1d2340; --muted:#6b7194;
+    --line:#e6e8f4; --ok:#1d9d74; --warn:#c94f3d; --soft:#f4f5fc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans Khmer','Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+  .wrap{max-width:860px;margin:0 auto;padding:16px}
+
+  /* header */
+  header{display:flex;align-items:center;justify-content:space-between;padding:14px 4px;color:#fff}
+  header h1{font-size:1.05rem;font-weight:700}
+  header .sub{font-size:.75rem;opacity:.75}
+  .hbtns{display:flex;gap:8px}
+  .hbtn{background:rgba(255,255,255,.14);border:none;color:#fff;padding:7px 12px;border-radius:8px;font-size:.8rem;cursor:pointer;font-family:inherit}
+
+  .card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 8px 30px rgba(0,0,0,.25);margin-bottom:14px}
+  label{display:block;font-size:.8rem;font-weight:600;margin:12px 0 5px;color:var(--muted)}
+  input,textarea,select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:9px;font-size:.95rem;font-family:inherit;background:#fff}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--indigo)}
+  textarea{min-height:110px;resize:vertical}
+  .btn{width:100%;margin-top:16px;padding:12px;border:none;border-radius:9px;background:var(--indigo);color:#fff;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .btn.small{width:auto;padding:8px 14px;margin-top:0;font-size:.8rem}
+  .btn.ghost{background:var(--soft);color:var(--indigo)}
+  .btn.danger{background:#fbeae7;color:var(--warn)}
+
+  .msg{margin-top:12px;padding:10px 12px;border-radius:9px;font-size:.85rem;display:none}
+  .msg.err{display:block;background:#fbeae7;color:var(--warn)}
+  .msg.ok{display:block;background:#e4f6ef;color:var(--ok)}
+
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{flex:1;min-width:100px;padding:9px 6px;border:none;border-radius:9px;background:rgba(255,255,255,.14);color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit}
+  .tab.active{background:#fff;color:var(--indigo)}
+
+  .notice{border:1.5px solid var(--line);border-radius:11px;padding:14px;margin-bottom:11px}
+  .notice .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .badge{font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--indigo)}
+  .badge.Urgent{background:#fbeae7;color:var(--warn)}
+  .notice h3{font-size:1rem;margin:8px 0 5px}
+  .notice p{font-size:.88rem;white-space:pre-wrap;color:#3a3f5e}
+  .meta{font-size:.72rem;color:var(--muted);margin-top:9px;display:flex;gap:12px;flex-wrap:wrap}
+  .ackpill{font-size:.72rem;font-weight:700;color:var(--ok)}
+  .nbtns{display:flex;gap:8px;margin-top:10px}
+
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+  th{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:99px;margin-right:5px}
+  .dot.on{background:var(--ok)} .dot.off{background:#c9cbdd}
+
+  .hidden{display:none!important}
+  .center{text-align:center;color:var(--muted);font-size:.85rem;padding:20px 0}
+  .conn{font-size:.72rem;color:#fff;opacity:.8;padding:2px 4px}
+  @media(max-width:560px){ header h1{font-size:.95rem} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="appTitle">ផ្ទាំងដំណឹង មន្ទីរពេទ្យខេត្តកំពង់ឆ្នាំង</h1>
+      <div class="sub">KCPH Notice Board · Kampong Chhnang Provincial Hospital</div>
+      <div class="conn" id="connStatus"></div>
+    </div>
+    <div class="hbtns">
+      <button class="hbtn" id="langBtn" onclick="toggleLang()">EN</button>
+      <button class="hbtn hidden" id="logoutBtn" onclick="logout()"></button>
+    </div>
+  </header>
+
+  <!-- LOGIN -->
+  <div class="card" id="loginView">
+    <label id="lblId">លេខសម្គាល់បុគ្គលិក (Staff ID)</label>
+    <input id="staffId" placeholder="S006" autocomplete="username">
+    <label id="lblPw">លេខសម្ងាត់ (Password — សម្រាប់អ្នកគ្រប់គ្រងតែប៉ុណ្ណោះ)</label>
+    <input id="password" type="password" autocomplete="current-password">
+    <button class="btn" id="loginBtn" onclick="login()">ចូលប្រើប្រាស់ · Sign In</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- APP -->
+  <div id="appView" class="hidden">
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-t="board" onclick="show('board')">ដំណឹង</button>
+      <button class="tab hidden admin" data-t="post" onclick="show('post')">បង្ហោះ</button>
+      <button class="tab hidden admin" data-t="staff" onclick="show('staff')">បុគ្គលិក</button>
+    </div>
+
+    <!-- BOARD -->
+    <div id="v-board">
+      <div id="noticeList"><div class="center" id="loadingTxt">កំពុងផ្ទុក…</div></div>
+    </div>
+
+    <!-- POST (admin) -->
+    <div id="v-post" class="hidden">
+      <div class="card">
+        <label id="lblCat">ប្រភេទ (Category)</label>
+        <select id="nCat">
+          <option value="General">ទូទៅ · General</option>
+          <option value="Urgent">បន្ទាន់ · Urgent</option>
+          <option value="Meeting">កិច្ចប្រជុំ · Meeting</option>
+          <option value="Policy">គោលការណ៍ · Policy</option>
+        </select>
+        <label id="lblTitle">ចំណងជើង (Title)</label>
+        <input id="nTitle">
+        <label id="lblBody">ខ្លឹមសារ (Content)</label>
+        <textarea id="nBody"></textarea>
+        <button class="btn" id="postBtn" onclick="postNotice()">បង្ហោះ និងផ្ញើទៅ Telegram · Post &amp; send to Telegram</button>
+        <div class="msg" id="postMsg"></div>
+      </div>
+    </div>
+
+    <!-- STAFF (admin) -->
+    <div id="v-staff" class="hidden">
+      <div class="card">
+        <h3 style="font-size:.95rem" id="addStaffH">បន្ថែមបុគ្គលិកថ្មី · Add staff</h3>
+        <label>Staff ID</label><input id="sId" placeholder="S017">
+        <label id="lblName">ឈ្មោះ (Name)</label><input id="sName">
+        <label id="lblDept">ផ្នែក (Department)</label><input id="sDept">
+        <button class="btn" onclick="addStaff()" id="addBtn">បន្ថែម · Add</button>
+        <div class="msg" id="staffMsg"></div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr><th>ID</th><th id="thName">ឈ្មោះ</th><th id="thDept">ផ្នែក</th><th>Telegram</th><th></th></tr></thead>
+          <tbody id="staffRows"></tbody>
+        </table>
+        <p style="font-size:.75rem;color:var(--muted);margin-top:10px" id="tgHint">
+          បុគ្គលិកចុះឈ្មោះក្នុង Telegram ដោយផ្ញើ <b>/register លេខសម្គាល់</b> ទៅក្រុម (ឧ. /register S017)
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SET THIS to your current GAS Web App /exec URL, then push.
+   ============================================================ */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbydJAxlAXxJ4YpQ6nmBNnEo93KfAjng0aARb8Bv3icqzcxL4fed-TgZjBvsuX95Y6k/exec';
+
+/* ---- safe storage (some old phones / private modes throw) ---- */
+var store = {
+  get: function(k){ try { return sessionStorage.getItem(k); } catch(e){ return null; } },
+  set: function(k,v){ try { sessionStorage.setItem(k,v); } catch(e){} },
+  del: function(k){ try { sessionStorage.removeItem(k); } catch(e){} }
+};
+
+var session = null;   // {id, name, role, dept, isAdmin, password}
+var LANG = 'km';
+
+/* ---- single API function: same protocol as Code.gs route() ---- */
+async function api(action, data) {
+  var payload = Object.assign({ action: action }, data || {});
+  if (session && session.isAdmin) {
+    payload.staffId  = payload.staffId  || session.id;
+    payload.password = payload.password || session.password;
+  }
+  var r = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload),
+    redirect: 'follow'
+  });
+  return r.json();
+}
+
+/* ---- connection check on load ---- */
+(async function () {
+  var el = document.getElementById('connStatus');
+  try {
+    var r = await fetch(GAS_URL, { redirect: 'follow' });
+    var j = await r.json();
+    el.textContent = (j && j.pong) ? '● Connected to server (v' + (j.version||'?') + ')' : '● Unexpected server reply';
+  } catch (e) {
+    el.textContent = '● Cannot reach server — check GAS_URL / deployment';
+  }
+})();
+
+/* ---- login ---- */
+async function login() {
+  var id = document.getElementById('staffId').value.trim().toUpperCase();
+  var pw = document.getElementById('password').value;
+  var btn = document.getElementById('loginBtn'), msg = document.getElementById('loginMsg');
+  msg.className = 'msg'; btn.disabled = true;
+  try {
+    var j = await api('login', { staffId: id, password: pw });
+    if (j.ok && j.staff) {
+      session = j.staff; session.password = pw;
+      store.set('kcphSession', JSON.stringify(session));
+      enterApp();
+    } else {
+      msg.className = 'msg err';
+      msg.textContent = ({BAD_PASSWORD: t('badPw'), UNKNOWN_ID: t('unknownId'), EMPTY_ID: t('emptyId')})[j.error] || (t('err') + ' ' + (j.error||''));
+    }
+  } catch (e) {
+    msg.className = 'msg err'; msg.textContent = t('connErr');
+  }
+  btn.disabled = false;
+}
+
+function enterApp() {
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('appView').classList.remove('hidden');
+  var lb = document.getElementById('logoutBtn');
+  lb.classList.remove('hidden');
+  lb.textContent = session.name + ' · ' + t('logout');
+  if (session.isAdmin) document.querySelectorAll('.admin').forEach(function(x){x.classList.remove('hidden');});
+  show('board');
+}
+
+function logout(){ store.del('kcphSession'); location.reload(); }
+
+/* ---- tabs ---- */
+function show(v) {
+  ['board','post','staff'].forEach(function (x) {
+    document.getElementById('v-' + x).classList.toggle('hidden', x !== v);
+  });
+  document.querySelectorAll('.tab').forEach(function (b) {
+    b.classList.toggle('active', b.dataset.t === v);
+  });
+  if (v === 'board') loadNotices();
+  if (v === 'staff') loadStaff();
+}
+
+/* ---- notices ---- */
+async function loadNotices() {
+  var box = document.getElementById('noticeList');
+  box.innerHTML = '<div class="center">' + t('loading') + '</div>';
+  try {
+    var j = await api('getNotices');
+    if (!j.ok) { box.innerHTML = '<div class="card center">' + t('err') + ' ' + esc(j.error || '?') + '</div>'; return; }
+    if (!j.notices.length) { box.innerHTML = '<div class="card center">' + t('noNotices') + '</div>'; return; }
+    box.innerHTML = '';
+    j.notices.forEach(function (n) {
+      var d = document.createElement('div');
+      d.className = 'card notice';
+      d.innerHTML =
+        '<div class="top"><span class="badge ' + esc(n.category) + '">' + esc(n.category) + '</span>' +
+        '<span class="ackpill">✓ ' + n.acks + ' ' + t('acked') + '</span></div>' +
+        '<h3>' + esc(n.title) + '</h3><p>' + esc(n.body) + '</p>' +
+        '<div class="meta"><span>' + esc(n.postedByName) + '</span><span>' + fmtDate(n.ts) + '</span></div>' +
+        (session.isAdmin
+          ? '<div class="nbtns"><button class="btn small ghost" onclick="viewAcks(\'' + n.id + '\',this)">' + t('whoAcked') + '</button>' +
+            '<button class="btn small ghost" onclick="resendNotice(\'' + n.id + '\',this)">' + t('resend') + '</button>' +
+            '<button class="btn small danger" onclick="delNotice(\'' + n.id + '\')">' + t('del') + '</button></div>' +
+            '<div class="ackdetail" id="ack-' + n.id + '"></div>'
+          : '');
+      box.appendChild(d);
+    });
+  } catch (e) { box.innerHTML = '<div class="card center">' + t('connErr') + '</div>'; }
+}
+
+async function viewAcks(id, btn) {
+  var box = document.getElementById('ack-' + id);
+  if (box.innerHTML) { box.innerHTML = ''; return; }
+  btn.disabled = true;
+  var j = await api('getAcks', { noticeId: id });
+  btn.disabled = false;
+  if (!j.ok) { box.innerHTML = '<p class="center">' + t('err') + '</p>'; return; }
+  var h = '<table style="margin-top:10px"><thead><tr><th>' + t('name') + '</th><th>' + t('status') + '</th></tr></thead><tbody>';
+  j.acked.forEach(function (a) { h += '<tr><td>' + esc(a.name) + ' (' + esc(a.staffId) + ')</td><td style="color:var(--ok)">✓ ' + fmtDate(a.ts) + '</td></tr>'; });
+  j.pending.forEach(function (p) { h += '<tr><td>' + esc(p.name) + ' (' + esc(p.staffId) + ')</td><td style="color:var(--warn)">' + t('pending') + '</td></tr>'; });
+  h += '</tbody></table>';
+  if (!j.acked.length && !j.pending.length) h = '<p class="center">' + t('noReg') + '</p>';
+  box.innerHTML = h;
+}
+
+async function resendNotice(id, btn) {
+  if (!confirm(t('confirmResend'))) return;
+  btn.disabled = true;
+  try {
+    var j = await api('resendNotice', { noticeId: id });
+    alert(j.ok ? (j.telegram ? t('resent') : t('postedNoTg')) : (t('err') + ' ' + (j.error || '')));
+  } catch (e) { alert(t('connErr')); }
+  btn.disabled = false;
+}
+
+async function delNotice(id) {
+  if (!confirm(t('confirmDel'))) return;
+  var j = await api('deleteNotice', { noticeId: id });
+  if (j.ok) loadNotices(); else alert(t('err') + ' ' + (j.error||''));
+}
+
+async function postNotice() {
+  var btn = document.getElementById('postBtn'), msg = document.getElementById('postMsg');
+  msg.className = 'msg'; btn.disabled = true;
+  try {
+    var j = await api('postNotice', {
+      title: document.getElementById('nTitle').value.trim(),
+      body:  document.getElementById('nBody').value.trim(),
+      category: document.getElementById('nCat').value
+    });
+    if (j.ok) {
+      msg.className = 'msg ok';
+      msg.textContent = j.telegram ? t('posted') : t('postedNoTg');
+      document.getElementById('nTitle').value = ''; document.getElementById('nBody').value = '';
+    } else {
+      msg.className = 'msg err';
+      msg.textContent = j.error === 'EMPTY_FIELDS' ? t('fillAll') : (t('err') + ' ' + (j.error||''));
+    }
+  } catch (e) { msg.className = 'msg err'; msg.textContent = t('connErr'); }
+  btn.disabled = false;
+}
+
+/* ---- staff ---- */
+async function loadStaff() {
+  var tb = document.getElementById('staffRows');
+  tb.innerHTML = '<tr><td colspan="5" class="center">' + t('loading') + '</td></tr>';
+  var j = await api('listStaff');
+  if (!j.ok) { tb.innerHTML = '<tr><td colspan="5" class="center">' + t('err') + '</td></tr>'; return; }
+  if (!j.staff.length) { tb.innerHTML = '<tr><td colspan="5" class="center">' + t('noStaff') + '</td></tr>'; return; }
+  tb.innerHTML = '';
+  j.staff.forEach(function (s) {
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + esc(s.staffId) + '</td><td>' + esc(s.name) + '</td><td>' + esc(s.dept) + '</td>' +
+      '<td><span class="dot ' + (s.telegram ? 'on' : 'off') + '"></span>' + (s.telegram ? t('reg') : t('notReg')) + '</td>' +
+      '<td><button class="btn small danger" onclick="delStaff(\'' + esc(s.staffId) + '\')">' + t('del') + '</button></td>';
+    tb.appendChild(tr);
+  });
+}
+
+async function addStaff() {
+  var msg = document.getElementById('staffMsg'); msg.className = 'msg';
+  var j = await api('addStaff', {
+    newId: document.getElementById('sId').value.trim(),
+    newName: document.getElementById('sName').value.trim(),
+    newDept: document.getElementById('sDept').value.trim()
+  });
+  if (j.ok) {
+    msg.className = 'msg ok'; msg.textContent = t('added');
+    document.getElementById('sId').value=''; document.getElementById('sName').value=''; document.getElementById('sDept').value='';
+    loadStaff();
+  } else {
+    msg.className = 'msg err';
+    msg.textContent = j.error === 'DUPLICATE' ? t('dup') : j.error === 'EMPTY_FIELDS' ? t('fillAll') : (t('err') + ' ' + (j.error||''));
+  }
+}
+
+async function delStaff(id) {
+  if (!confirm(t('confirmDel'))) return;
+  var j = await api('deleteStaff', { targetId: id });
+  if (j.ok) loadStaff(); else alert(t('err') + ' ' + (j.error||''));
+}
+
+/* ---- i18n ---- */
+var STR = {
+  km: { loading:'កំពុងផ្ទុក…', noNotices:'មិនទាន់មានដំណឹងទេ', acked:'បានអាន', whoAcked:'អ្នកបានអាន', del:'លុប',
+        confirmDel:'តើអ្នកប្រាកដទេ?', resend:'ផ្ញើម្តងទៀត', confirmResend:'ផ្ញើដំណឹងនេះទៅក្រុម Telegram ម្តងទៀត?', resent:'បានផ្ញើទៅ Telegram រួចរាល់!', posted:'បានបង្ហោះ និងផ្ញើទៅ Telegram រួចរាល់!', postedNoTg:'បានបង្ហោះ ប៉ុន្តែ Telegram មិនបានផ្ញើ — ពិនិត្យ bot',
+        fillAll:'សូមបំពេញគ្រប់ប្រអប់', err:'មានបញ្ហា:', connErr:'មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេ — ពិនិត្យអ៊ីនធឺណិត ឬ GAS deployment',
+        badPw:'លេខសម្ងាត់មិនត្រឹមត្រូវ', unknownId:'រកមិនឃើញលេខសម្គាល់នេះ — សូមទាក់ទងការិយាល័យបច្ចេកទេស', emptyId:'សូមបញ្ចូលលេខសម្គាល់',
+        name:'ឈ្មោះ', status:'ស្ថានភាព', pending:'មិនទាន់អាន', noReg:'មិនទាន់មានបុគ្គលិកចុះឈ្មោះ Telegram ទេ',
+        reg:'ចុះឈ្មោះរួច', notReg:'មិនទាន់', noStaff:'មិនទាន់មានបុគ្គលិកបន្ថែម', added:'បានបន្ថែម!', dup:'លេខសម្គាល់នេះមានរួចហើយ', logout:'ចាកចេញ' },
+  en: { loading:'Loading…', noNotices:'No notices yet', acked:'read', whoAcked:'Who has read', del:'Delete',
+        confirmDel:'Are you sure?', resend:'Resend', confirmResend:'Resend this notice to the Telegram group?', resent:'Resent to Telegram!', posted:'Posted and sent to Telegram!', postedNoTg:'Posted, but Telegram send failed — check bot',
+        fillAll:'Please fill in all fields', err:'Error:', connErr:'Cannot reach server — check internet or GAS deployment',
+        badPw:'Incorrect password', unknownId:'Staff ID not found — contact the Technical Office', emptyId:'Please enter your Staff ID',
+        name:'Name', status:'Status', pending:'Not yet read', noReg:'No staff registered in Telegram yet',
+        reg:'Registered', notReg:'Not yet', noStaff:'No additional staff yet', added:'Added!', dup:'This ID already exists', logout:'Sign out' }
+};
+function t(k){ return STR[LANG][k] || k; }
+function toggleLang(){
+  LANG = LANG === 'km' ? 'en' : 'km';
+  document.getElementById('langBtn').textContent = LANG === 'km' ? 'EN' : 'ខ្មែរ';
+  document.getElementById('appTitle').textContent = LANG === 'km' ? 'ផ្ទាំងដំណឹង មន្ទីរពេទ្យខេត្តកំពង់ឆ្នាំង' : 'KCPH Notice Board';
+  if (session) { show(document.querySelector('.tab.active').dataset.t); var lb=document.getElementById('logoutBtn'); lb.textContent = session.name + ' · ' + t('logout'); }
+}
+
+/* ---- utils ---- */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function fmtDate(iso){ if(!iso) return ''; var d=new Date(iso); return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+
+/* ---- restore session ---- */
+(function(){ var s = store.get('kcphSession'); if (s) { session = JSON.parse(s); enterApp(); } })();
+</script>
+</body>
+</html>
